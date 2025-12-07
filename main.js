@@ -7,7 +7,6 @@ async function cargarNegocios() {
         rewardsList.innerHTML = ''; 
 
         data.forEach(negocio => {
-            // Validación de logo
             let urlLogo = (negocio.logo && negocio.logo.trim() !== '') ? negocio.logo : IMAGEN_DEFECTO;
 
             const cardHTML = `
@@ -37,7 +36,7 @@ async function cargarNegocios() {
                         </div>
 
                         <p class="reward-desc" style="margin-bottom: 12px; font-size: 0.9rem;">
-                            ${negocio.distrito} - ${negocio.provincia} - Perú
+                            ${negocio.distrito} - ${negocio.provincia} - ${negocio.departamento}
                         </p>
 
                         <div style="
@@ -47,7 +46,7 @@ async function cargarNegocios() {
                             padding: 8px 12px; 
                             border-radius: 6px; 
                             font-weight: 600; 
-                            font-size: 1.1rem; /* Tamaño similar al nombre */
+                            font-size: 1.1rem;
                             width: 100%;
                             cursor: pointer;
                             transition: background 0.2s;
