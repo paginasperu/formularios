@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Premios - Versión Compacta</title>
+    <title>Listado de Premios - Tipografía Ajustada</title>
     <style>
         /* --- Estilos Base --- */
         :root {
@@ -13,12 +13,17 @@
             --text-gray: #6b7280;
             --points-bg: #e0e7ff;
             --points-text: #4338ca;
-            --img-size-desktop: 130px; /* Tamaño del cuadrado en PC */
-            --img-size-mobile: 100px;  /* Tamaño del cuadrado en Móvil */
+            
+            /* Tamaños de las tarjetas (Cuadrados) */
+            --img-size-desktop: 140px; 
+            --img-size-mobile: 110px; /* Aumentado un poco para que quepa la letra grande */
+            
+            /* Tipografía unificada */
+            --font-size-main: 1.1rem; /* Mismo tamaño para Puntos y Título */
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
             padding: 20px;
@@ -34,18 +39,18 @@
             gap: 16px;
         }
 
-        /* --- Tarjeta --- */
+        /* --- Estructura de la Tarjeta --- */
         .reward-card {
             background-color: var(--card-bg);
             border-radius: 12px;
-            padding: 0; /* Sin padding para que la imagen toque el borde */
-            display: flex; /* Siempre 2 columnas (incluso en móvil) */
-            align-items: center; /* Centra verticalmente el contenido */
+            padding: 0; 
+            display: flex; 
+            align-items: center; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            overflow: hidden; /* Recorta la imagen en las esquinas redondeadas */
+            overflow: hidden; 
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            height: var(--img-size-desktop); /* Altura fija igual al ancho de la imagen */
+            height: var(--img-size-desktop); 
         }
 
         .reward-card:hover {
@@ -53,52 +58,58 @@
             box-shadow: 0 8px 12px rgba(0,0,0,0.1);
         }
 
-        /* --- Columna Izquierda: Imagen --- */
+        /* --- Columna Izquierda: Imagen (Cuadrada) --- */
         .reward-image {
             width: var(--img-size-desktop);
             height: var(--img-size-desktop);
-            flex-shrink: 0; /* Evita que se aplaste */
+            flex-shrink: 0; 
         }
 
         .reward-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Mantiene la imagen perfecta en el cuadrado */
+            object-fit: cover; 
             display: block;
         }
 
         /* --- Columna Derecha: Contenido --- */
         .reward-content {
             flex-grow: 1;
-            padding: 0 20px; /* Espacio interno para el texto */
+            padding: 0 20px; 
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-width: 0; /* Truco CSS vital para que el texto se corte bien en Flexbox */
+            min-width: 0; /* Vital para que el texto se corte bien */
+            height: 100%;
         }
 
-        /* Puntos */
+        /* Puntos (Tamaño aumentado) */
         .reward-points {
             display: inline-block;
             background-color: var(--points-bg);
             color: var(--points-text);
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 4px 10px;
+            
+            font-size: var(--font-size-main); /* IGUAL AL TÍTULO */
+            font-weight: 800; /* Un poco más grueso para destacar */
+            
+            padding: 4px 12px;
             border-radius: 50px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             align-self: flex-start;
+            line-height: 1;
         }
 
         /* Título */
         .reward-title {
-            margin: 0 0 4px 0;
-            font-size: 1.1rem;
-            color: var(--text-dark);
+            margin: 0 0 6px 0;
+            
+            font-size: var(--font-size-main); /* IGUAL A LOS PUNTOS */
             font-weight: 700;
-            white-space: nowrap;      /* Texto en una sola línea */
-            overflow: hidden;         /* Ocultar lo que sobra */
-            text-overflow: ellipsis;  /* Puntos suspensivos ... */
+            
+            color: var(--text-dark);
+            white-space: nowrap;      
+            overflow: hidden;         
+            text-overflow: ellipsis;  
         }
 
         /* Descripción */
@@ -107,9 +118,8 @@
             font-size: 0.9rem;
             color: var(--text-gray);
             line-height: 1.4;
-            /* Por defecto en PC mostramos hasta 2 líneas */
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 2; /* 2 líneas en PC */
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -117,27 +127,28 @@
         /* --- Estilos para Móviles --- */
         @media (max-width: 480px) {
             
-            /* Ajustamos altura y ancho de imagen */
             .reward-card, 
             .reward-image {
-                height: var(--img-size-mobile); /* 100px */
+                height: var(--img-size-mobile); /* 110px */
             }
             
             .reward-image {
-                width: var(--img-size-mobile); /* 100px cuadrado exacto */
+                width: var(--img-size-mobile); /* Cuadrado perfecto */
             }
 
             .reward-content {
-                padding: 0 12px; /* Menos padding lateral */
+                padding: 0 14px; 
             }
 
-            .reward-title {
-                font-size: 1rem;
+            /* Ajuste de fuentes para móvil si se desea un poco más pequeño, 
+               pero manteniendo la igualdad entre puntos y título */
+            :root {
+                --font-size-main: 1rem; 
             }
 
             /* Descripción limitada a 1 sola línea en móvil */
             .reward-desc {
-                display: block; /* Quitamos el line-clamp de webkit para usar el método standard */
+                display: block; 
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -185,7 +196,16 @@
 
         <article class="reward-card">
             <div class="reward-image">
-                <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=300&q=80" alt="Gift Card">
+                <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80" alt="Mochila">
             </div>
             <div class="reward-content">
-                <span class="reward-points">500
+                <span class="reward-points">850 Pts</span>
+                <h3 class="reward-title">Mochila Urbana Waterproof</h3>
+                <p class="reward-desc">Diseño antirrobo con puerto USB de carga, ideal para viajes cortos o la universidad.</p>
+            </div>
+        </article>
+
+    </div>
+
+</body>
+</html>
