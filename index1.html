@@ -1,205 +1,91 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#fff">
-  <title>Club de Beneficios</title>
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7@8.3.0/framework7-bundle.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons@5.0.5/css/framework7-icons.css">
-  
-  <style>
-    /* Tu personalización de colores para la marca */
-    :root {
-      --f7-theme-color: #6200ee; /* Color Principal */
-      --f7-theme-color-rgb: 98, 0, 238;
-    }
-    .nivel-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      margin: 16px;
-      box-shadow: 0 10px 20px rgba(118, 75, 162, 0.4);
-    }
-    .puntos-gigantes {
-      font-size: 3.5em;
-      font-weight: 800;
-      line-height: 1;
-      margin: 10px 0;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Programa de Beneficios — [Nombre del Comercio]</title>
+
+  <!-- Tailwind CDN (rápido para prototipo) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0EA5E9" />
 </head>
-<body>
-  <div id="app">
-    <div class="view view-main">
-      
-      <div class="page" data-name="home">
-        <div class="navbar">
-          <div class="navbar-bg"></div>
-          <div class="navbar-inner justify-content-center">
-            <div class="title">Mi Club</div>
-          </div>
-        </div>
-        
-        <div class="page-content login-screen-content">
-          <div class="login-screen-title">Bienvenido</div>
-          
-          <div class="list form-list">
-            <ul>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Celular</div>
-                  <div class="item-input-wrap">
-                    <input type="tel" name="username" id="input-celular" placeholder="Ej: 999123456">
-                    <span class="input-clear-button"></span>
-                  </div>
-                </div>
-              </li>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">PIN (4 dígitos)</div>
-                  <div class="item-input-wrap">
-                    <input type="password" name="password" id="input-pin" placeholder="****" maxlength="4">
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-          
-          <div class="block">
-            <button class="button button-fill button-large button-round" onclick="consultarPuntos()">VER MIS PUNTOS</button>
-            <div class="block-footer text-align-center" style="margin-top: 20px;">
-              Programa de Beneficios<br>Standard & Seguro
-            </div>
-          </div>
+<body class="bg-gray-50 text-gray-800 font-sans">
+  <main class="max-w-xl mx-auto p-4">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <img src="/icons/icon-72.png" alt="logo" class="w-12 h-12 rounded-lg" />
+        <div>
+          <div class="text-sm text-gray-500">Programa de Beneficios</div>
+          <h1 class="text-lg font-semibold">Carnes El Buen Sabor</h1>
         </div>
       </div>
+      <button id="btnInfo" aria-label="info" class="p-2 rounded-md">ℹ️</button>
+    </header>
 
-      <template id="template-resultados">
-        <div class="page">
-          <div class="navbar">
-            <div class="navbar-bg"></div>
-            <div class="navbar-inner">
-              <div class="left">
-                <a href="#" class="link back">
-                  <i class="icon f7-icons">arrow_left</i>
-                  <span class="if-not-md">Atrás</span>
-                </a>
-              </div>
-              <div class="title">Mis Beneficios</div>
-            </div>
-          </div>
-          
-          <div class="page-content">
-            <div class="nivel-card">
-              <div style="font-size: 1.2em; opacity: 0.9;">Hola, <span id="res-nombre">${nombre}</span></div>
-              <div class="puntos-gigantes">${puntos}</div>
-              <div>PUNTOS ACUMULADOS</div>
-              <div class="chip chip-outline color-white" style="margin-top: 10px;">
-                <div class="chip-label">Nivel ${nivel}</div>
-              </div>
-            </div>
+    <!-- Hero -->
+    <section class="mb-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm">
+        <h2 class="text-xl font-bold mb-1">Fideliza y gana premios</h2>
+        <p class="text-sm text-gray-600 mb-3">Acumula beneficios cada vez que compras. ¡Es gratis y rápido!</p>
 
-            <div class="block-title">PREMIOS DISPONIBLES</div>
-            <div class="list media-list inset">
-              <ul>
-                <li>
-                  <div class="item-content">
-                    <div class="item-media"><i class="icon f7-icons color-blue">gift_fill</i></div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title">Café Americano</div>
-                        <div class="item-after"><span class="badge color-green">100 pts</span></div>
-                      </div>
-                      <div class="item-subtitle">Canjeable en caja</div>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="item-content">
-                    <div class="item-media"><i class="icon f7-icons color-red">ticket_fill</i></div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title">Vale de Descuento</div>
-                        <div class="item-after"><span class="badge color-green">500 pts</span></div>
-                      </div>
-                      <div class="item-subtitle">S/ 20.00 de descuento</div>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            
-            <div class="block">
-                <p class="text-align-center text-color-gray">Presenta tu DNI en caja para canjear</p>
-            </div>
-          </div>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btnRegister" class="col-span-2 bg-blue-600 text-white py-3 rounded-lg font-medium">Registrarme</button>
+          <button id="btnAdd" class="bg-white border border-gray-200 py-3 rounded-lg">➕ Sumar beneficio</button>
         </div>
-      </template>
+      </div>
+    </section>
 
-    </div>
-  </div>
+    <!-- Premio destacado -->
+    <section class="mb-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="text-xs text-gray-500">Premio del mes</div>
+            <div class="text-sm font-semibold">10 beneficios → 1 jugo gratis</div>
+          </div>
+          <div class="text-xs text-gray-400">Válido hasta 31/12/2025</div>
+        </div>
+      </div>
+    </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/framework7@8.3.0/framework7-bundle.min.js"></script>
+    <!-- Cómo funciona -->
+    <section class="mb-6">
+      <div class="bg-white p-4 rounded-2xl shadow-sm">
+        <h3 class="font-semibold mb-2">Cómo funciona</h3>
+        <ol class="text-sm text-gray-600 space-y-2">
+          <li>1. Regístrate (nombre + celular).</li>
+          <li>2. Pide al vendedor que sume tu beneficio.</li>
+          <li>3. Canjea cuando llegues al premio.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Footer / contacto -->
+    <footer class="text-center text-xs text-gray-500 py-6">
+      <a href="https://wa.me/51999999999" id="whatsapp" class="block mb-2">¿Dudas? Escríbenos por WhatsApp</a>
+      <div>© 2025 PRECIOS · <a href="/privacy.html">Política de privacidad</a></div>
+    </footer>
+  </main>
+
   <script>
-    // 1. INICIALIZAR FRAMEWORK7
-    var app = new Framework7({
-      el: '#app', // Donde vive la app
-      name: 'Club Beneficios',
-      theme: 'auto', // Detecta si es iOS o Android y cambia el diseño solo
-    });
-
-    var mainView = app.views.create('.view-main');
-    
-    // TU URL DEL SCRIPT (PÉGALA AQUÍ)
-    var URL_BACKEND = "AQUI_PEGA_TU_URL_DEL_SCRIPT"; 
-
-    // 2. LÓGICA DE CONSULTA
-    function consultarPuntos() {
-      var celular = document.getElementById('input-celular').value;
-      var pin = document.getElementById('input-pin').value;
-
-      if (!celular || !pin) {
-        app.dialog.alert('Por favor ingresa tu celular y PIN', 'Faltan datos');
-        return;
-      }
-
-      // Mostrar Cargando nativo de App
-      app.preloader.show();
-
-      // Petición al Backend
-      fetch(URL_BACKEND + "?celular=" + encodeURIComponent(celular) + "&pin=" + encodeURIComponent(pin))
-        .then(response => response.json())
-        .then(data => {
-          app.preloader.hide(); // Ocultar cargando
-
-          if (data.error) {
-            app.dialog.alert(data.error, 'Error');
-          } else {
-            // NAVEGACIÓN TIPO APP:
-            // Creamos la nueva ruta dinámicamente inyectando los datos
-            var template = document.getElementById('template-resultados').innerHTML;
-            
-            // Reemplazo manual simple (Template strings)
-            // Nota: En producción Framework7 tiene su propio motor de templates, 
-            // pero esto es JS puro para que sea fácil para ti.
-            var htmlFinal = template
-                .replace('${nombre}', data.nombre)
-                .replace('${puntos}', data.puntos)
-                .replace('${nivel}', data.nivel);
-
-            // Cargar la nueva página con animación
-            mainView.router.loadContent(htmlFinal);
-          }
-        })
-        .catch(error => {
-          app.preloader.hide();
-          app.dialog.alert('Error de conexión. Intenta nuevamente.', 'Ops');
-        });
+    // Service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js').catch(console.error);
     }
+
+    // Simple handlers (ejemplo)
+    document.getElementById('btnRegister').onclick = () => {
+      // abrir modal o redirigir a /register
+      window.location.href = '/register.html';
+    };
+    document.getElementById('btnAdd').onclick = () => {
+      // abrir modal para sumar, o pedir código de vendedor
+      window.location.href = '/add.html';
+    };
   </script>
 </body>
 </html>
