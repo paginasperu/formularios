@@ -107,7 +107,7 @@ async function cargarPerfilNegocio(usuarioSlug) {
 
         // B. Extraemos el ID de su hoja de puntos
         // NOTA: Usamos corchetes porque tu columna tiene espacios: "tabla de puntos"
-        const idHojaExterna = negocio['tabla de puntos']; 
+        const idHojaExterna = negocio.tabla_premios_clientes;
 
         if (!idHojaExterna) {
             container.innerHTML = `<h2 style="text-align:center;">${negocio.nombre}</h2><p style="text-align:center;">Este negocio aún no ha configurado sus premios.</p>`;
