@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programa de beneficios</title>
+
+<script>
+        // Verificamos si hay una ruta guardada en la memoria (del 404.html)
+        const rutaGuardada = sessionStorage.getItem('ruta_destino');
+        
+        if (rutaGuardada && rutaGuardada !== '/') {
+            // Restauramos la URL visualmente (ej: premios.pe/nike) sin recargar
+            history.replaceState(null, null, rutaGuardada);
+            // Borramos la memoria para no causar bucles
+            sessionStorage.removeItem('ruta_destino');
+        }
+    </script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
