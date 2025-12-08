@@ -3,305 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premios.pe - Directorio</title>
+    <meta name="description" content="Academia Teorema 21 - Preparación preuniversitaria de alto nivel. Asegura tu ingreso a San Marcos, UNI y Católica.">
+    <title>Academia Teorema 21 | Asegura tu Ingreso</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
     <style>
         /* =========================================
-           ESTILOS (CSS)
+           1. CONFIGURACIÓN BASE Y VARIABLES
            ========================================= */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root { 
-            --bg-color: #ffffff;
-            --text-dark: #202124;
-            --text-gray: #5f6368;
-            --primary: #4f46e5;
-            --whatsapp: #25D366; 
-            --border: #dfe1e5;
+        :root {
+            --primary: #0f172a;      /* Azul Oscuro (Autoridad) */
+            --accent: #f97316;       /* Naranja Vibrante (Acción/Energía) */
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --radius: 12px;
+            --shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
         }
 
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg-color); 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
             color: var(--text-dark);
-            min-height: 100vh; 
-            padding: 20px; 
-            display: flex; flex-direction: column; align-items: center; 
+            background-color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* --- BUSCADOR (Header) --- */
-        .filters-container { 
-            width: 100%; max-width: 580px; 
-            margin-top: 10vh; margin-bottom: 30px; 
-            display: flex; flex-direction: column; align-items: center; gap: 20px; 
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+
+        /* Botones Globales */
+        .btn {
+            display: inline-block;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
         }
-        .brand-title { font-size: 2.5rem; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; }
-        
-        .search-box { 
-            width: 100%; padding: 14px 24px; 
-            border-radius: 24px; border: 1px solid var(--border); 
-            font-size: 1.1rem; outline: none; transition: all 0.2s; 
-            box-shadow: 0 1px 6px rgba(32,33,36,.28);
-        }
-        .search-box:focus { 
-            box-shadow: 0 1px 6px rgba(32,33,36,.28), 0 0 0 2px rgba(79,70,229,0.1); 
-            border-color: transparent; 
+        .btn-primary { background: var(--accent); color: white; border: 2px solid var(--accent); }
+        .btn-primary:hover { background: #ea580c; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3); }
+        .btn-outline { background: transparent; color: var(--white); border: 2px solid var(--white); }
+        .btn-outline:hover { background: var(--white); color: var(--primary); }
+
+        /* Contenedor estándar */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        /* --- LISTA DE NEGOCIOS --- */
-        .rewards-container { 
-            width: 100%; max-width: 580px; 
-            display: flex; flex-direction: column; 
+        /* =========================================
+           2. HEADER & NAVEGACIÓN
+           ========================================= */
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-flex {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -1px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logo i { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { color: #cbd5e1; font-weight: 500; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--accent); }
+
+        /* Menú Móvil */
+        .hamburger { display: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+        /* =========================================
+           3. HERO SECTION (PORTADA)
+           ========================================= */
+        .hero {
             position: relative;
-            min-height: 50vh;
+            height: 100vh;
+            min-height: 600px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)), 
+                        url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: white;
         }
 
-        /* Item de la lista */
-        .simple-item { 
-            padding: 16px 10px; border-bottom: 1px solid #f1f3f4; 
-            display: flex; justify-content: space-between; align-items: center; gap: 10px; 
-            animation: aparecer 0.3s ease-out forwards;
-            flex-wrap: wrap; 
-        }
-
-        .info-bloque { flex-grow: 1; display: flex; flex-direction: column; }
-        .business-name { font-size: 1.1rem; font-weight: 500; color: var(--text-dark); }
-        .business-cat { font-size: 0.85rem; color: var(--text-gray); margin-top: 2px; }
-
-        /* Botones de Acción */
-        .acciones-bloque { display: flex; gap: 8px; }
-
-        .btn-link {
-            text-decoration: none; padding: 6px 12px; border-radius: 16px;
-            font-size: 0.85rem; font-weight: 600; white-space: nowrap; cursor: pointer; border: none;
-            transition: transform 0.1s;
-        }
-        .btn-link:hover { transform: translateY(-1px); opacity: 0.9; }
-
-        .btn-whatsapp { background-color: var(--whatsapp); color: white; }
-        .btn-puntos { background-color: var(--primary); color: white; }
-        .btn-disabled { font-size: 0.8rem; color: #ccc; cursor: default; }
-        .btn-disabled:hover { transform: none; opacity: 1; }
-
-        /* Botón dentro del modal */
-        .btn-action {
-            background: var(--primary); color: white; border: none; padding: 0 20px;
-            border-radius: 24px; cursor: pointer; font-weight: 600;
-        }
-
-        /* --- MODAL --- */
-        .modal-backdrop { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 999; 
-            justify-content: center; align-items: center; padding: 20px; 
-            opacity: 0; transition: opacity 0.3s; 
-        }
-        .modal-backdrop.show { opacity: 1; }
+        .hero-content { max-width: 800px; margin: 0 auto; padding-top: 60px; }
         
-        .modal-content { 
-            background: white; width: 100%; max-width: 400px; padding: 25px; 
-            border-radius: 16px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-            transform: scale(0.95); transition: transform 0.3s; 
+        .tagline {
+            display: inline-block;
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border: 1px solid rgba(249, 115, 22, 0.5);
         }
-        .modal-backdrop.show .modal-content { transform: scale(1); }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
         
-        .close-btn { 
-            position: absolute; top: 15px; right: 15px; font-size: 1.5rem; 
-            cursor: pointer; color: #999; line-height: 1; 
+        .hero h1 span { color: var(--accent); }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* --- LOADER --- */
-        .mi-loader { 
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); 
-            border-radius: 50%; width: 40px; height: 40px; 
-            animation: girar 1s linear infinite; margin: 50px auto; 
-        }
-        @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+        .hero-btns { display: flex; gap: 15px; justify-content: center; }
 
-        /* Móvil */
-        @media (max-width: 480px) {
-            .simple-item { align-items: flex-start; }
-            .acciones-bloque { width: 100%; justify-content: flex-end; margin-top: 5px; }
+        /* =========================================
+           4. METODOLOGÍA (FEATURES)
+           ========================================= */
+        .section { padding: 100px 0; }
+        .bg-light { background-color: var(--bg-light); }
+
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-header h2 { font-size: 2.5rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .section-header p { color: var(--text-light); max-width: 600px; margin: 0 auto; }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            border-top: 4px solid transparent;
+        }
+
+        .feature-card:hover { 
+            transform: translateY(-10px); 
+            border-top-color: var(--accent);
+        }
+
+        .icon-box {
+            width: 60px; height: 60px;
+            background: #fff7ed;
+            color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 { font-size: 1.25rem; margin-bottom: 10px; }
+        .feature-card p { color: var(--text-light); font-size: 0.95rem; }
+
+        /* =========================================
+           5. CICLOS (PRODUCTOS)
+           ========================================= */
+        .cycles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .cycle-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cycle-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .cycle-header h3 { font-size: 1.5rem; margin-bottom: 5px; }
+        .cycle-header span { font-size: 0.9rem; opacity: 0.8; }
+
+        .cycle-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .cycle-price { font-size: 2.5rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; text-align: center; }
+        .cycle-price span { font-size: 1rem; color: var(--text-light); font-weight: 400; }
+
+        .cycle-features { list-style: none; margin-bottom: 30px; flex-grow: 1; }
+        .cycle-features li { margin-bottom: 12px; color: var(--text-light); display: flex; gap: 10px; align-items: center; }
+        .cycle-features li i { color: var(--accent); }
+
+        /* =========================================
+           6. RESULTADOS (SOCIAL PROOF)
+           ========================================= */
+        .stats-section {
+            background: var(--primary);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+        .stat-item h3 { font-size: 3rem; font-weight: 800; color: var(--accent); margin-bottom: 5px; }
+        .stat-item p { font-size: 1.1rem; opacity: 0.9; }
+
+        /* =========================================
+           7. CALL TO ACTION & FOOTER
+           ========================================= */
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(to right, #fff7ed, #ffffff);
+        }
+
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 50px 0 20px;
+            font-size: 0.9rem;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col h4 { color: white; margin-bottom: 20px; font-size: 1.1rem; }
+        .footer-col ul li { margin-bottom: 10px; }
+        .footer-col ul li a:hover { color: var(--accent); }
+        .copyright { text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        /* Botón Flotante WhatsApp */
+        .float-wa {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            background: #25d366;
+            color: white;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+            z-index: 999;
+            transition: transform 0.3s;
+        }
+        .float-wa:hover { transform: scale(1.1); }
+
+        /* Animaciones Fade In */
+        .fade-in { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: var(--primary); flex-direction: column; padding: 20px; text-align: center; }
+            .nav-links.active { display: flex; }
+            .hamburger { display: block; }
+            .hero-btns { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <div class="filters-container">
-        <h1 class="brand-title">Premios<span style="color:#4f46e5">.pe</span></h1>
-        <input type="text" id="searchInput" class="search-box" placeholder="Busca un negocio..." autocomplete="off" autofocus>
-    </div>
-
-    <div class="rewards-container" id="rewardsList">
-        <div class="mi-loader"></div>
-    </div>
-
-    <div id="modalPuntos" class="modal-backdrop">
-        <div class="modal-content">
-            <div class="close-btn" onclick="cerrarModal()">×</div>
-            
-            <h2 id="modalNombreNegocio" style="margin-top:0; font-size: 1.5rem; color: var(--text-dark);">Nombre Negocio</h2>
-            <p style="color:#64748b; margin-bottom:20px;">Ingresa tu DNI para ver tu saldo acumulado.</p>
-            
-            <div style="display:flex; gap:10px;">
-                <input type="tel" id="inputDNI" placeholder="DNI..." class="search-box" style="padding:10px;">
-                <button id="btnConsultar" class="btn-action">Buscar</button>
+    <header>
+        <div class="container nav-flex">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-shapes"></i> TEOREMA 21
+            </a>
+            <nav>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#metodo">Metodología</a></li>
+                    <li><a href="#ciclos">Ciclos</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                    <li><a href="#" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">Aula Virtual</a></li>
+                </ul>
+            </nav>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fa-solid fa-bars"></i>
             </div>
-            
-            <div id="resultadoPuntos" style="margin-top:20px; font-weight:bold; min-height:30px;"></div>
         </div>
-    </div>
+    </header>
+
+    <section id="inicio" class="hero">
+        <div class="hero-content fade-in">
+            <span class="tagline">🔥 Nuevos Inicios: 15 de Enero</span>
+            <h1>Preparación de Alto Nivel para asegurar tu <span class="highlight">Ingreso</span></h1>
+            <p>La metodología Teorema 21 combina exigencia académica, tutores personalizados y simulacros tipo examen de admisión. Tu vacante te espera.</p>
+            <div class="hero-btns">
+                <a href="#ciclos" class="btn btn-primary">Ver Ciclos Disponibles</a>
+                <a href="https://wa.me/51999999999" class="btn btn-outline"><i class="fa-brands fa-whatsapp"></i> Hablar con Asesor</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="container stats-grid">
+            <div class="stat-item fade-in">
+                <h3>+1,500</h3>
+                <p>Ingresantes</p>
+            </div>
+            <div class="stat-item fade-in">
+                <h3>12</h3>
+                <p>Años de Experiencia</p>
+            </div>
+            <div class="stat-item fade-in">
+                <h3>98%</h3>
+                <p>Ratio de Ingreso</p>
+            </div>
+            <div class="stat-item fade-in">
+                <h3>100%</h3>
+                <p>Clases en Vivo</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="metodo" class="section bg-light">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>¿Por qué elegir Teorema 21?</h2>
+                <p>No somos una academia más. Somos un sistema de entrenamiento diseñado para superar los exámenes más difíciles del país.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="icon-box"><i class="fa-solid fa-chalkboard-user"></i></div>
+                    <h3>Docentes Especialistas</h3>
+                    <p>Profesores con amplia experiencia en exámenes UNI, San Marcos y Católica. Enseñan trucos y métodos directos.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="icon-box"><i class="fa-solid fa-file-pen"></i></div>
+                    <h3>Simulacros Diarios</h3>
+                    <p>Evaluaciones constantes con el mismo nivel de dificultad y tiempo que el examen real. Mide tu progreso.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="icon-box"><i class="fa-solid fa-video"></i></div>
+                    <h3>Plataforma HD</h3>
+                    <p>Clases grabadas en alta definición disponibles 24/7 para que repases los temas más complejos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ciclos" class="section">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Elige tu Camino</h2>
+                <p>Ciclos especializados según la universidad a la que postulas.</p>
+            </div>
+            <div class="cycles-grid">
+                
+                <div class="cycle-card fade-in">
+                    <div class="cycle-header">
+                        <h3>Ciclo San Marcos</h3>
+                        <span>Áreas A, B, C, D y E</span>
+                    </div>
+                    <div class="cycle-body">
+                        <div class="cycle-price">S/ 250 <span>/mes</span></div>
+                        <ul class="cycle-features">
+                            <li><i class="fa-solid fa-check"></i> Lunes a Sábado (Mañana/Tarde)</li>
+                            <li><i class="fa-solid fa-check"></i> Libros Teóricos incluidos</li>
+                            <li><i class="fa-solid fa-check"></i> Simulacros DECO</li>
+                            <li><i class="fa-solid fa-check"></i> Asesoría Psicológica</li>
+                        </ul>
+                        <a href="https://wa.me/51999999999?text=Hola,%20info%20Ciclo%20San%20Marcos" class="btn btn-primary">Matricularme</a>
+                    </div>
+                </div>
+
+                <div class="cycle-card fade-in">
+                    <div class="cycle-header" style="background:#b91c1c">
+                        <h3>Ciclo UNI</h3>
+                        <span>Ingeniería y Arquitectura</span>
+                    </div>
+                    <div class="cycle-body">
+                        <div class="cycle-price">S/ 280 <span>/mes</span></div>
+                        <ul class="cycle-features">
+                            <li><i class="fa-solid fa-check"></i> Full Matemáticas y Ciencias</li>
+                            <li><i class="fa-solid fa-check"></i> Nivelación desde cero</li>
+                            <li><i class="fa-solid fa-check"></i> Seminarios Nocturnos</li>
+                            <li><i class="fa-solid fa-check"></i> Material exclusivo UNI</li>
+                        </ul>
+                        <a href="https://wa.me/51999999999?text=Hola,%20info%20Ciclo%20UNI" class="btn btn-primary">Matricularme</a>
+                    </div>
+                </div>
+
+                <div class="cycle-card fade-in">
+                    <div class="cycle-header" style="background:#0284c7">
+                        <h3>Ciclo Católica</h3>
+                        <span>Talento y Primera Opción</span>
+                    </div>
+                    <div class="cycle-body">
+                        <div class="cycle-price">S/ 300 <span>/mes</span></div>
+                        <ul class="cycle-features">
+                            <li><i class="fa-solid fa-check"></i> Lectura Crítica y Redacción</li>
+                            <li><i class="fa-solid fa-check"></i> Matemática PUCP</li>
+                            <li><i class="fa-solid fa-check"></i> Simulacros presenciales</li>
+                            <li><i class="fa-solid fa-check"></i> Acceso a biblioteca</li>
+                        </ul>
+                        <a href="https://wa.me/51999999999?text=Hola,%20info%20Ciclo%20Católica" class="btn btn-primary">Matricularme</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="contacto" class="section cta-section">
+        <div class="container fade-in">
+            <h2>¿Listo para ser Cachimbo?</h2>
+            <p style="margin-bottom:30px; font-size:1.1rem; color:var(--text-light);">Las vacantes son limitadas. Reserva tu matrícula hoy y obtén un 10% de descuento en tu primer mes.</p>
+            <a href="https://wa.me/51999999999" class="btn btn-primary" style="padding: 15px 40px; font-size: 1.1rem;">
+                <i class="fa-brands fa-whatsapp"></i> Inscribirme por WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="logo" style="margin-bottom:15px;"><i class="fa-solid fa-shapes"></i> TEOREMA 21</div>
+                    <p>La academia líder en preparación preuniversitaria. Comprometidos con tu educación y tu futuro profesional.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#ciclos">Ciclos</a></li>
+                        <li><a href="#">Intranet Alumnos</a></li>
+                        <li><a href="#">Blog Educativo</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contáctanos</h4>
+                    <ul>
+                        <li><i class="fa-solid fa-location-dot"></i> Av. Universitaria 1234, Lima</li>
+                        <li><i class="fa-solid fa-phone"></i> (01) 555-1234</li>
+                        <li><i class="fa-solid fa-envelope"></i> informes@teorema21.edu.pe</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Academia Teorema 21. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/51999999999" class="float-wa" target="_blank">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
     <script>
-        /* =========================================
-           LÓGICA JAVASCRIPT (TODO EN UNO)
-           ========================================= */
-
-        // CONFIGURACIÓN
-        const SHEET_ID = '1ew2qtysq4rwWkL7VU2MTaOv2O3tmD28kFYN5eVHCiUY'; 
-        const SHEET_NAME = 'negocios'; 
-        const API_URL = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
-
-        const container = document.getElementById('rewardsList');
-        const modal = document.getElementById('modalPuntos');
-        const searchInput = document.getElementById('searchInput');
-
-        // --- 1. CARGAR DIRECTORIO ---
-        async function cargarDirectorio() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                container.innerHTML = ''; // Limpiar loader
-                
-                // Ordenar alfabéticamente
-                data.sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-                data.forEach(negocio => {
-                    // Validamos datos
-                    // 'catalogo': Enlace a WhatsApp o web
-                    // 'id_hoja_clientes': ID del sheet para consultar puntos
-                    const linkCatalogo = negocio.catalogo || '#';
-                    const idSheetPuntos = negocio.id_hoja_clientes || ''; 
-                    
-                    // Botón Catálogo (WhatsApp)
-                    const btnCatalogo = linkCatalogo !== '#' 
-                        ? `<a href="${linkCatalogo}" target="_blank" class="btn-link btn-whatsapp">Catálogo ↗</a>`
-                        : `<span class="btn-link btn-disabled">Sin Catálogo</span>`;
-
-                    // Botón Puntos (Abre Modal) - Solo si tiene ID configurado
-                    const btnPuntos = idSheetPuntos
-                        ? `<button onclick="abrirModalPuntos('${negocio.nombre}', '${idSheetPuntos}')" class="btn-link btn-puntos">Mis Puntos</button>`
-                        : ``;
-
-                    const itemHTML = `
-                        <div class="simple-item business-card" data-name="${negocio.nombre}">
-                            <div class="info-bloque">
-                                <span class="business-name">${negocio.nombre}</span>
-                                <span class="business-cat">${negocio.categoria || ''}</span>
-                            </div>
-                            
-                            <div class="acciones-bloque">
-                                ${btnPuntos}
-                                ${btnCatalogo}
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += itemHTML;
-                });
-
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = '<p style="text-align:center; color:red;">Error cargando datos. Intenta recargar.</p>';
-            }
+        // 1. Menú Móvil
+        function toggleMenu() {
+            const nav = document.getElementById('navLinks');
+            nav.classList.toggle('active');
         }
 
-        // --- 2. FILTRADO (BUSCADOR) ---
-        searchInput.addEventListener('input', function() {
-            const texto = this.value.toLowerCase();
-            const items = document.querySelectorAll('.business-card');
+        // 2. Animación al hacer Scroll (Intersection Observer)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
 
-            items.forEach(item => {
-                const nombre = item.getAttribute('data-name').toLowerCase();
-                // Mostrar si coincide el nombre
-                if (nombre.includes(texto)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Solo animar una vez
                 }
             });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach((el) => {
+            observer.observe(el);
         });
-
-        // --- 3. LÓGICA DEL MODAL ---
-        function abrirModalPuntos(nombreNegocio, idSheet) {
-            document.getElementById('modalNombreNegocio').textContent = nombreNegocio;
-            
-            // Limpiar
-            document.getElementById('inputDNI').value = '';
-            document.getElementById('resultadoPuntos').innerHTML = '';
-            
-            // Configurar botón buscar para este negocio específico
-            const btn = document.getElementById('btnConsultar');
-            btn.onclick = function() { consultarSaldo(idSheet); };
-            
-            // Mostrar
-            modal.style.display = 'flex';
-            setTimeout(() => { modal.classList.add('show'); }, 10);
-        }
-
-        function cerrarModal() {
-            modal.classList.remove('show');
-            setTimeout(() => { modal.style.display = 'none'; }, 300);
-        }
-
-        // Cerrar si clic fuera
-        window.onclick = function(event) { if (event.target == modal) cerrarModal(); }
-
-        // --- 4. CONSULTA DE PUNTOS (CONEXIÓN EXTERNA) ---
-        async function consultarSaldo(sheetId) {
-            const dniInput = document.getElementById('inputDNI');
-            const resultadoDiv = document.getElementById('resultadoPuntos');
-            const dniBuscado = dniInput.value.trim();
-
-            if(!dniBuscado) {
-                resultadoDiv.innerHTML = '<span style="color:red">Ingresa un DNI válido.</span>';
-                return;
-            }
-
-            resultadoDiv.innerHTML = '<span style="color:#64748b">Buscando...</span>';
-            
-            // Asumimos pestaña 'clientes'
-            const urlClientes = `https://opensheet.elk.sh/${sheetId}/clientes`;
-
-            try {
-                const res = await fetch(urlClientes);
-                const clientes = await res.json();
-
-                // Búsqueda inteligente (dni, DNI, Dni)
-                const cliente = clientes.find(c => {
-                    const valorEnFila = c.dni || c.DNI || c.Dni;
-                    return String(valorEnFila).trim() === String(dniBuscado);
-                });
-
-                if(cliente) {
-                    const puntos = cliente.puntos || cliente.Puntos || 0;
-                    resultadoDiv.innerHTML = `✅ Tienes <b>${puntos}</b> Puntos acumulados.`;
-                } else {
-                    resultadoDiv.innerHTML = `<span style="color:red">DNI no encontrado en este negocio.</span>`;
-                }
-
-            } catch (e) {
-                console.error(e);
-                resultadoDiv.innerHTML = 'Error de conexión. Verifica el ID de la hoja.';
-            }
-        }
-
-        // --- INICIO ---
-        document.addEventListener("DOMContentLoaded", () => {
-            cargarDirectorio();
-        });
-
     </script>
+
 </body>
 </html>
