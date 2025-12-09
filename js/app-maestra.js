@@ -193,6 +193,7 @@
         if (match) sheetId = match[1];
 
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(config.nombrePestana)}`;
+        console.log("URL DE CONEXIÓN A SHEETS:", url);
         const MAX_PRODUCTS = 50;
 
         // Como ya estamos dentro del .then() de Promise.all, sabemos que PapaParse existe seguro.
