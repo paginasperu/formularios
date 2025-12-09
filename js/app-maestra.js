@@ -298,3 +298,4 @@
         const allBtn = document.querySelector('#categoryContainer button');
         if(allBtn) allBtn.click();
     };
+    })();
