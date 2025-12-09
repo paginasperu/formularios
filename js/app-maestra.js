@@ -249,9 +249,15 @@
             
             // Lógica de validación y conversión del enlace de imagen
             let img = (p.imagen && (p.imagen.startsWith('http') || p.imagen.startsWith('/'))) ? p.imagen : 'https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=Sin+Imagen';
+
+            // LÍNEA DE DEBUG: Muestra la URL ORIGINAL
+            console.log("URL ORIGINAL: ", img);
             
             // Aplicamos la conversión a enlaces de Google Drive
             img = convertirDriveLink(img); 
+
+            // LÍNEA DE DEBUG: Muestra la URL CONVERTIDA
+            console.log("URL CONVERTIDA: ", img);
 
             // Si la URL convertida no empieza con http, usamos el placeholder
             if(!img.startsWith('http') && !img.startsWith('/')) {
