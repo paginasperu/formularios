@@ -133,14 +133,14 @@
 </main>
 
 <script>
-    // --- 1. CONFIGURACIÓN ---
+// --- 1. CONFIGURACIÓN ---
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR67aoFMPN7IdCJuST7JW3lweWiT_aUucVi8qO1IztTDNLCxThrGbzu4NoQ8LZoDknfzq_l8opyzcEr/pub?gid=0&single=true&output=csv'; 
     
-    const CACHE_KEY = 'quimica_db_v1';
-    const CACHE_TIME = 'quimica_time_v1';
+    const CACHE_KEY = 'quimica_db_fixed'; // Cambié el nombre para forzar una recarga limpia
+    const CACHE_TIME = 'quimica_time_fixed';
     const CACHE_HORAS = 1; 
 
-    // --- 2. REFERENCIAS DOM (Ahora coinciden con el HTML) ---
+    // --- 2. REFERENCIAS DOM ---
     const grid = document.getElementById('grid');
     const searchInput = document.getElementById('search');
     const sortInput = document.getElementById('sort');
@@ -150,18 +150,18 @@
 
     // --- 4. INICIALIZACIÓN ---
     async function init() {
-        grid.innerHTML = '<p class="loading">Cargando catálogo actualizado...</p>';
+        grid.innerHTML = '<p class="loading">Cargando catálogo...</p>';
         try {
             products = await getSmartData();
             render(products);
             setupListeners();
         } catch (e) {
             console.error(e);
-            grid.innerHTML = '<p class="error">Hubo un error cargando los datos. Verifica tu conexión.</p>';
+            grid.innerHTML = '<p class="error">Error cargando datos. Verifica tu conexión.</p>';
         }
     }
 
-    // --- 5. LÓGICA SMART DATA (Igual que antes) ---
+    // --- 5. SMART DATA ---
     async function getSmartData() {
         const now = new Date().getTime();
         const storedTime = localStorage.getItem(CACHE_TIME);
@@ -183,36 +183,47 @@
         return data;
     }
 
-    // --- 6. CONVERTIDOR CSV (Igual que antes) ---
+    // --- 6. CONVERTIDOR CSV PRO (Aquí estaba el error) ---
+    // Esta versión usa un Regex estándar que respeta espacios y comas dentro de comillas
     function csvToJson(csv) {
-        const lines = csv.split('\n').filter(line => line.trim() !== '');
+        const lines = csv.split(/\r?\n/).filter(line => line.trim() !== '');
         if (lines.length < 2) return [];
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+
+        // 1. Obtener cabeceras y limpiarlas
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
         
-        return lines.slice(1).map(line => {
-            const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-            if (!row) return null;
-            let obj = {};
-            headers.forEach((h, i) => {
-                let val = row[i] ? row[i].replace(/^"|"$/g, '').trim() : '';
-                obj[h] = val;
-            });
-            return obj;
-        }).filter(item => item !== null);
+        const result = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            
+            // MAGIA REGEX: Separa por comas, PERO NO si están dentro de comillas
+            const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            
+            if (row.length === headers.length) { // Solo procesamos si las columnas coinciden
+                let obj = {};
+                headers.forEach((h, index) => {
+                    // Limpiamos comillas extra que Google pone a veces
+                    let val = row[index] ? row[index].trim().replace(/^"|"$/g, '').replace(/""/g, '"') : '';
+                    obj[h] = val;
+                });
+                result.push(obj);
+            }
+        }
+        return result;
     }
 
-    // --- 7. RENDERIZADO (Adaptado a TU diseño CSS) ---
+    // --- 7. RENDERIZADO ---
     function render(data) {
         if (data.length === 0) {
             grid.innerHTML = '<p class="error">No se encontraron productos.</p>';
             return;
         }
 
-        // AQUÍ ESTÁ LA MAGIA: Uso tus clases CSS (.card-img, .badge-cat, etc.)
         grid.innerHTML = data.map(p => `
             <article class="card">
                 <div class="card-img">
-                    <img src="${p.imagen || 'https://placehold.co/400x300?text=Sin+Foto'}" alt="${p.nombre}" loading="lazy">
+                    <img src="${p.imagen && p.imagen.startsWith('http') ? p.imagen : 'https://placehold.co/400x300?text=Sin+Foto'}" alt="${p.nombre}" loading="lazy">
                 </div>
                 <div class="card-body">
                     ${p.categoria ? `<div class="badge-cat">${p.categoria}</div>` : ''}
@@ -220,7 +231,7 @@
                     <p class="desc">${p.descripcion || ''}</p>
                     
                     <div class="price-row">
-                        <div class="price">$${parseFloat(p.precio || 0).toFixed(2)}</div>
+                        <div class="price">S/ ${parseFloat(p.precio || 0).toFixed(2)}</div>
                         <button class="btn-cta" onclick="cotizar('${p.nombre}')">Cotizar</button>
                     </div>
                 </div>
@@ -228,7 +239,7 @@
         `).join('');
     }
 
-    // --- 8. FUNCIONES DE AYUDA ---
+    // --- 8. LISTENERS ---
     function setupListeners() {
         const filterFn = () => {
             const term = searchInput.value.toLowerCase();
@@ -251,7 +262,6 @@
     }
 
     function cotizar(nombre) {
-        // Pon tu número aquí
         const telefono = "51999999999"; 
         const msg = `Hola, me interesa el producto: ${nombre}`;
         window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`, '_blank');
