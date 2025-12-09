@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Insumos Químicos</title>
+
+    <!-- Fuente moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        header {
+            background: #0d47a1;
+            padding: 40px 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        header p {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .card h3 {
+            margin: 15px 0 5px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0d47a1;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.85;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Catálogo de Insumos Químicos</h1>
+    <p>Suministros para laboratorios, industrias, tratamiento de agua y más.</p>
+</header>
+
+<div class="container">
+
+    <div class="grid">
+
+        <!-- PRODUCTO 1 -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1581090700227-1e37b190418e?w=600" alt="Reactivo químico">
+            <span class="tag">Reactivo</span>
+            <h3>Ácido Clorhídrico 37%</h3>
+            <p>Solución altamente concentrada para procesos industriales, limpieza y tratamiento de superficies.</p>
+        </div>
+
+        <!-- PRODUCTO 2 -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1581091226033-d7d83e39bc42?w=600" alt="Laboratorio">
+            <span class="tag">Laboratorio</span>
+            <h3>Alcohol Isopropílico 99%</h3>
+            <p>Ideal para limpieza de equipos electrónicos y procesos de desinfección de alta pureza.</p>
+        </div>
+
+        <!-- PRODUCTO 3 -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1582562124811-c09040d0e2c5?w=600" alt="Tratamiento de agua">
+            <span class="tag">Tratamiento de Agua</span>
+            <h3>Sulfato de Aluminio</h3>
+            <p>Coagulante utilizado para purificación de agua potable e industrial.</p>
+        </div>
+
+        <!-- PRODUCTO 4 -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=600" alt="Producto industrial">
+            <span class="tag">Industrial</span>
+            <h3>Peróxido de Hidrógeno 50%</h3>
+            <p>Agente oxidante utilizado en blanqueo, desinfección y procesos químicos industriales.</p>
+        </div>
+
+        <!-- PRODUCTO 5 -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1585166955268-dcd76e8de7fb?w=600" alt="Químicos sólidos">
+            <span class="tag">Sólidos</span>
+            <h3>Soda Cáustica en Escamas</h3>
+            <p>Base fuerte utilizada en fabricación de jabones, limpieza y procesos industriales.</p>
+        </div>
+
+        <!-- PRODUCTO 6 -->
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1582719478187-2c9c8d26597f?w=600" alt="Químicos varios">
+            <span class="tag">Multiuso</span>
+            <h3>Ácido Cítrico</h3>
+            <p>Aditivo alimentario y agente limpiador biodegradable para uso múltiple.</p>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    © 2025 Catálogo de Insumos Químicos — Todos los derechos reservados.
+</footer>
+
+</body>
+</html>
