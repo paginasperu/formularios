@@ -120,16 +120,25 @@
             border-color: var(--primary);
         }
 
+/* --- CORRECCIÓN DE IMÁGENES (FULL WIDTH) --- */
         .card-img {
-            height: 180px;
-            background: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid #f0f0f0;
-            padding: 10px;
+            /* Aumentamos un poco la altura para que luzca mejor */
+            height: 200px; 
+            width: 100%;
+            background: #eee; /* Fondo gris suave mientras carga */
+            padding: 0; /* Quitamos el relleno interno */
+            margin: 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
         }
-        .card-img img { max-height: 100%; max-width: 100%; object-fit: contain; }
+
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            /* 'cover' es la clave: recorta la imagen para llenar todo el hueco sin deformarla */
+            object-fit: cover; 
+            display: block;
+        }
 
         .card-body { padding: 15px; display: flex; flex-direction: column; flex: 1; }
 
