@@ -309,11 +309,20 @@
         const GOOGLE_SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1YVBKvEpihEF9yq62zVIoJvHPolwCiZ3CWz54GyfuPeE/edit?usp=sharing"; // Tu enlace de edición aquí
         const WHATSAPP_PHONE = "51907597089"; // TU NÚMERO
 
-// --- 2. LÓGICA MODO ADMIN ---
-        // Si la URL termina en #admin, redirige directo a la hoja de cálculo
-        if (window.location.hash === '#admin') {
-            window.location.href = GOOGLE_SHEET_EDIT_URL;
+// --- 2. LÓGICA MODO ADMIN (DINÁMICA) ---
+        
+        // Función que revisa si hay que redirigir
+        function checkAdmin() {
+            if (window.location.hash === '#admin') {
+                window.location.href = GOOGLE_SHEET_EDIT_URL;
+            }
         }
+
+        // A) Ejecutar al cargar la página (por si entra directo al link)
+        checkAdmin();
+
+        // B) Ejecutar cada vez que cambie el # en la URL (por si lo escribe después)
+        window.addEventListener('hashchange', checkAdmin);
 
         // --- DATOS DE EJEMPLO (IMPORTACIONES) ---
         const MOCK_DATA = [
