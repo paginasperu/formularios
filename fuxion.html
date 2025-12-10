@@ -522,46 +522,31 @@
             <div id="modalBody"></div>
         </div>
     </div>
-
     <script>
         // --- CONFIGURACIÓN ---
-        const WHATSAPP_PHONE = "51992891423"; // TU NÚMERO AQUÍ
-        // Si tienes el CSV, pon el enlace aquí. Si está vacío, usa datos falsos.
+        const WHATSAPP_PHONE = "51992891423"; // CAMBIA ESTO POR TU NÚMERO
+        
+        // Pega aquí tu enlace CSV de la hoja "Productos"
+        // Asegúrate que al publicar en Google Sheets seleccionaste "Hoja: Productos"
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMhaXZEj0ZLxbLV5YlqRWTipFNB7dP_JoWyDBvRklDE619sJyse8ln00TMiN0ueFXhtLOZED2avD1V/pub?gid=0&single=true&output=csv"; 
 
-        // --- DATOS SIMULADOS (FALLBACK) ---
-        // Estos se usarán si no configuras la hoja de cálculo
+        // --- DATOS DE RESPALDO (Por si falla la hoja) ---
         const MOCK_DATA = [
-            { id: 1, nombre: "Vita Xtra T+", precio: 45.00, categoria: "Energía", descripcion: "Bebida energizante natural llena de antioxidantes, vitaminas y minerales para darte energía sostenida todo el día.", img: "energy,drink,fruit" },
-            { id: 2, nombre: "Termo T3", precio: 42.50, categoria: "Control de Peso", descripcion: "Delicioso té quemador de grasa que acelera el metabolismo y aumenta tu temperatura corporal.", img: "tea,lemon" },
-            { id: 3, nombre: "Flora Liv", precio: 38.00, categoria: "Inmunidad", descripcion: "Probióticos y fibra prebiótica para regenerar tu flora intestinal y reforzar tus defensas.", img: "yogurt,granadilla" },
-            { id: 4, nombre: "Passion", precio: 45.00, categoria: "Vigor", descripcion: "Bebida funcional que mejora la circulación y eleva la energía y el libido de forma natural.", img: "passionfruit" },
-            { id: 5, nombre: "No Stress", precio: 40.00, categoria: "Relajación", descripcion: "Nutrientes para el cerebro que ayudan a disipar el estrés y mejorar la concentración.", img: "meditation,tea" },
-            { id: 6, nombre: "Biopro Fit", precio: 65.00, categoria: "Control de Peso", descripcion: "Proteína de alto valor biológico que ayuda a reducir medidas y tonificar músculos.", img: "protein,shake" },
-            { id: 7, nombre: "Beauty In", precio: 50.00, categoria: "Anti-Edad", descripcion: "Colágeno hidrolizado optimizado para la piel, con frutas exóticas.", img: "beauty,skin" },
-            { id: 8, nombre: "Berry Balance", precio: 39.00, categoria: "Limpieza", descripcion: "Protege tu tracto urinario con el poder de los arándanos y frutas del bosque.", img: "berries" },
-            { id: 9, nombre: "Liquid Fibra", precio: 36.00, categoria: "Limpieza", descripcion: "Fibra prebiótica para regular el tránsito intestinal de manera natural.", img: "fiber,drink" },
-            { id: 10, nombre: "Sport I", precio: 48.00, categoria: "Deporte", descripcion: "Pre-entreno natural para preparar tu cuerpo para el ejercicio intenso.", img: "sport,gym" },
-            { id: 11, nombre: "Sport II", precio: 48.00, categoria: "Deporte", descripcion: "Hidratación post-entreno con sales minerales y vitaminas.", img: "water,bottle" },
-            { id: 12, nombre: "Gano+ Cappuccino", precio: 55.00, categoria: "Inmunidad", descripcion: "Café saludable con Ganoderma Lucidum para elevar tus defensas.", img: "coffee" },
-             { id: 13, nombre: "Prunex 1", precio: 35.00, categoria: "Limpieza", descripcion: "Té herbal para una limpieza de colon profunda y efectiva.", img: "plum,tea" },
+            { id: 1, nombre: "Vita Energía", precio: 45.00, categoria: "Energía", descripcion: "Bebida multivitamínica con antioxidantes.", img: "https://loremflickr.com/400/300/acai,drink?lock=1" },
+            { id: 2, nombre: "Termo T3", precio: 42.50, categoria: "Control de Peso", descripcion: "Té herbal quemador de grasa.", img: "https://loremflickr.com/400/300/tea,lemon?lock=2" },
+            // ... (Se cargarán estos si no pones el link CSV)
         ];
 
-        // --- ESTADO DE LA APP ---
         let allProducts = [];
         let cart = JSON.parse(localStorage.getItem('fuxionCart')) || [];
         let activeCategory = 'all';
 
-        // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', async () => {
             await loadData();
             updateCartUI();
-            
-            // Event Listeners búsqueda
             document.getElementById('searchInput').addEventListener('keyup', applyFilters);
         });
 
-        // --- LÓGICA DE DATOS ---
         async function loadData() {
             try {
                 if (GOOGLE_SHEET_CSV_URL) {
@@ -569,44 +554,70 @@
                     const text = await response.text();
                     allProducts = parseCSV(text);
                 } else {
-                    // Simular carga rápida para demo
-                    allProducts = MOCK_DATA.map(p => ({
-                        ...p,
-                        // Usamos loremflickr con keywords específicas para que se vea real
-                        imagen: `https://loremflickr.com/400/300/${p.img}?lock=${p.id}`
-                    }));
+                    allProducts = MOCK_DATA;
                 }
             } catch (error) {
-                console.error("Error cargando datos, usando backup", error);
+                console.error("Usando datos de respaldo", error);
                 allProducts = MOCK_DATA;
             }
-
             renderCategories();
             applyFilters();
             document.getElementById('loading').classList.add('hidden');
         }
 
-        // Parser CSV simple y robusto para este caso
-        function parseCSV(csvText) {
-            const lines = csvText.split('\n').filter(l => l.trim() !== '');
-            // Asumimos orden: Nombre, Precio, Categoria, Descripcion, Imagen
-            // Saltamos header si existe (heurística simple: ver si precio es número)
+        // --- CORRECCIÓN IMPORTANTE AQUÍ ---
+        // Nuevo parser que respeta espacios, comas y comillas de Google Sheets
+        function parseCSV(text) {
             const result = [];
-            lines.slice(1).forEach((line, index) => {
-                // Regex para manejar comas dentro de comillas
-                const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || []; 
-                if (parts.length >= 3) {
-                    const clean = (txt) => txt ? txt.replace(/^"|"$/g, '').trim() : '';
+            const lines = text.split('\n');
+            
+            // Empezamos en i=1 para saltar el encabezado (Nombre, Precio...)
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const row = [];
+                let currentVal = '';
+                let insideQuotes = false;
+
+                // Leemos caracter por caracter para no confundirnos
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    
+                    if (char === '"') {
+                        // Manejar comillas dobles dentro de textos
+                        if (insideQuotes && line[j+1] === '"') {
+                            currentVal += '"';
+                            j++; 
+                        } else {
+                            insideQuotes = !insideQuotes;
+                        }
+                    } else if (char === ',' && !insideQuotes) {
+                        // Si hay coma y NO estamos entre comillas, es columna nueva
+                        row.push(currentVal.trim());
+                        currentVal = '';
+                    } else {
+                        currentVal += char;
+                    }
+                }
+                row.push(currentVal.trim()); // Añadir la última columna
+
+                // Asignamos según tus columnas: 
+                // [0]Nombre, [1]Precio, [2]Categoria, [3]Descripcion, [4]ImagenURL
+                if (row.length >= 3) { 
+                    // Limpieza de precio: quita símbolos de moneda si los hubiera
+                    let precioLimpio = row[1].replace(/[^\d.-]/g, '');
+                    
                     result.push({
-                        id: index + 100,
-                        nombre: clean(parts[0]),
-                        precio: parseFloat(clean(parts[1])) || 0,
-                        categoria: clean(parts[2]) || 'General',
-                        descripcion: clean(parts[3]) || 'Sin descripción',
-                        imagen: clean(parts[4]) || `https://loremflickr.com/400/300/health,drink?lock=${index}`
+                        id: i,
+                        nombre: row[0].replace(/^"|"$/g, '') || "Producto sin nombre", // Quita comillas extra
+                        precio: parseFloat(precioLimpio) || 0,
+                        categoria: row[2].replace(/^"|"$/g, '') || "General",
+                        descripcion: row[3] ? row[3].replace(/^"|"$/g, '') : "",
+                        imagen: row[4] ? row[4].replace(/^"|"$/g, '') : "https://via.placeholder.com/300"
                     });
                 }
-            });
+            }
             return result;
         }
 
@@ -614,8 +625,8 @@
             const categories = ['all', ...new Set(allProducts.map(p => p.categoria))];
             const container = document.getElementById('categoryFilters');
             container.innerHTML = '';
-            
             categories.forEach(cat => {
+                if(!cat) return;
                 const btn = document.createElement('button');
                 btn.className = `filter-btn ${cat === 'all' ? 'active' : ''}`;
                 btn.innerText = cat === 'all' ? 'Todos' : cat;
@@ -624,7 +635,6 @@
             });
         }
 
-        // --- RENDERIZADO ---
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const sort = document.getElementById('sortSelect').value;
@@ -636,7 +646,6 @@
                 return matchesSearch && matchesCat;
             });
 
-            // Ordenamiento
             if (sort === 'price-asc') filtered.sort((a,b) => a.precio - b.precio);
             if (sort === 'price-desc') filtered.sort((a,b) => b.precio - a.precio);
             if (sort === 'name-asc') filtered.sort((a,b) => a.nombre.localeCompare(b.nombre));
@@ -660,14 +669,14 @@
                 card.className = 'product-card';
                 card.innerHTML = `
                     <div class="img-container">
-                        <img src="${p.imagen}" alt="${p.nombre}" loading="lazy">
+                        <img src="${p.imagen}" alt="${p.nombre}" onerror="this.src='https://via.placeholder.com/300?text=Sin+Imagen'">
                         <span class="category-badge">${p.categoria}</span>
                     </div>
                     <div class="card-body">
                         <div class="product-title">${p.nombre}</div>
                         <div class="product-desc">${p.descripcion}</div>
                         <div class="price-row">
-                            <span class="price">$${p.precio.toFixed(2)}</span>
+                            <span class="price">S/ ${p.precio.toFixed(2)}</span>
                         </div>
                         <div class="actions">
                             <button class="btn btn-outline" onclick="showDetails(${p.id})">+ Info</button>
@@ -686,18 +695,12 @@
             applyFilters();
         }
 
-        // --- CARRITO ---
         function addToCart(id) {
             const product = allProducts.find(p => p.id === id);
             const existing = cart.find(i => i.id === id);
-            
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({ ...product, qty: 1 });
-            }
+            if (existing) { existing.qty++; } else { cart.push({ ...product, qty: 1 }); }
             saveCart();
-            toggleCart(true); // Abrir carrito al agregar
+            toggleCart(true);
         }
 
         function removeFromCart(id) {
@@ -722,16 +725,11 @@
         function updateCartUI() {
             const count = cart.reduce((acc, item) => acc + item.qty, 0);
             const total = cart.reduce((acc, item) => acc + (item.precio * item.qty), 0);
+            document.getElementById('cartCount').innerText = count;
+            document.getElementById('cartCount').classList.toggle('active', count > 0);
+            document.getElementById('cartTotal').innerText = `S/ ${total.toFixed(2)}`;
             
-            // Badge
-            const badge = document.getElementById('cartCount');
-            badge.innerText = count;
-            badge.classList.toggle('active', count > 0);
-
-            // Lista lateral
             const container = document.getElementById('cartItems');
-            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
-            
             if (cart.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Tu carrito está vacío.</p>';
             } else {
@@ -740,16 +738,14 @@
                         <img src="${item.imagen}" alt="${item.nombre}">
                         <div class="cart-item-info">
                             <h4>${item.nombre}</h4>
-                            <p>$${item.precio.toFixed(2)} x ${item.qty}</p>
+                            <p>S/ ${item.precio.toFixed(2)} x ${item.qty}</p>
                             <div class="qty-controls">
                                 <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
                                 <span>${item.qty}</span>
                                 <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
                             </div>
                         </div>
-                        <div style="margin-left:auto; cursor:pointer; color:#e74c3c;" onclick="removeFromCart(${item.id})">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </div>
+                        <div style="margin-left:auto; cursor:pointer; color:#e74c3c;" onclick="removeFromCart(${item.id})">❌</div>
                     </div>
                 `).join('');
             }
@@ -758,62 +754,45 @@
         function toggleCart(forceOpen = false) {
             const sidebar = document.getElementById('cartSidebar');
             const overlay = document.getElementById('cartOverlay');
-            
-            if (forceOpen) {
-                sidebar.classList.add('open');
-                overlay.classList.add('open');
-            } else {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('open');
-            }
+            if (forceOpen) { sidebar.classList.add('open'); overlay.classList.add('open'); }
+            else { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); }
         }
 
         function checkoutWhatsApp() {
             if (cart.length === 0) return alert("Agrega productos primero.");
-            
             let msg = "Hola! Quiero hacer el siguiente pedido:%0A%0A";
             let total = 0;
-            
             cart.forEach(item => {
                 const subtotal = item.precio * item.qty;
-                msg += `▪ ${item.qty}x ${item.nombre} - $${subtotal.toFixed(2)}%0A`;
+                msg += `▪ ${item.qty}x ${item.nombre} - S/ ${subtotal.toFixed(2)}%0A`;
                 total += subtotal;
             });
-            
-            msg += `%0A*TOTAL: $${total.toFixed(2)}*`;
-            
+            msg += `%0A*TOTAL: S/ ${total.toFixed(2)}*`;
             window.open(`https://wa.me/${WHATSAPP_PHONE}?text=${msg}`, '_blank');
         }
 
-        // --- MODAL DETALLES ---
         function showDetails(id) {
             const p = allProducts.find(i => i.id === id);
             const modal = document.getElementById('productModal');
-            const body = document.getElementById('modalBody');
-            
-            body.innerHTML = `
+            document.getElementById('modalBody').innerHTML = `
                 <div style="text-align:center; margin-bottom:20px;">
-                    <img src="${p.imagen}" style="max-width:100%; max-height:250px; border-radius:10px;">
+                    <img src="${p.imagen}" style="max-width:100%; max-height:250px; border-radius:10px;" onerror="this.src='https://via.placeholder.com/300'">
                 </div>
                 <h2 style="color:var(--primary-dark);">${p.nombre}</h2>
-                <div style="margin: 10px 0; color:#777;">Categoría: ${p.categoria}</div>
-                <p style="margin: 15px 0; font-size:1.1rem;">${p.descripcion}</p>
-                <div style="font-size:1.5rem; font-weight:bold; margin-bottom:20px;">$${p.precio.toFixed(2)}</div>
-                <button class="btn btn-primary" style="width:100%" onclick="addToCart(${p.id}); closeModal()">Agregar al Carrito</button>
+                <div style="margin: 10px 0; color:#777; font-weight:bold; background:#eee; display:inline-block; padding:5px 10px; border-radius:15px;">${p.categoria}</div>
+                <p style="margin: 15px 0; font-size:1.1rem; line-height:1.6;">${p.descripcion}</p>
+                <div style="font-size:1.8rem; font-weight:800; color:var(--primary); margin-bottom:20px;">S/ ${p.precio.toFixed(2)}</div>
+                <button class="btn btn-primary" style="width:100%; padding:15px; font-size:1.1rem;" onclick="addToCart(${p.id}); closeModal()">Agregar al Carrito</button>
             `;
-            
             modal.classList.add('active');
         }
 
         function closeModal() {
             document.getElementById('productModal').classList.remove('active');
         }
-
-        // Cerrar modal al hacer clic fuera
         document.getElementById('productModal').addEventListener('click', (e) => {
             if (e.target.id === 'productModal') closeModal();
         });
-
     </script>
 </body>
 </html>
