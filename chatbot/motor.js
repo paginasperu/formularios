@@ -6,6 +6,8 @@ const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const statusText = document.getElementById('status-text');
 
+let pageLoadedAt = Date.now(); // Captura el tiempo de inicio de la carga de la página.
+
 // === INICIO DEL SISTEMA ===
 async function iniciarSistema() {
     const config = window.CHAT_CONFIG || {};
@@ -160,11 +162,23 @@ async function llamarIA(prompt) {
 // === FUNCIÓN PRINCIPAL ===
 async function enviarMensaje() {
     const trampa = document.getElementById('honeypot');
+    
+    // 1. HONEYPOT CHECK (Defensa principal contra bots de spam)
     if (trampa && trampa.value !== "") return; 
+
+    // 2. TIEMPO MÍNIMO DESDE LA CARGA (Defensa contra ejecución inmediata)
+    const MIN_DELAY_MS = 2000; // 2 segundos
+    if (Date.now() - pageLoadedAt < MIN_DELAY_MS) {
+        // Podrías agregar una burbuja de error aquí, pero para no molestar al usuario,
+        // simplemente ignoramos la solicitud temprana.
+        console.warn("Mensaje ignorado: Enviado demasiado rápido después de la carga.");
+        return; 
+    }
 
     const pregunta = userInput.value.trim();
     if (!pregunta) return;
 
+    // 3. LÍMITE DE SPAM POR SESIÓN (Filtro de cortesía)
     if (!checkSpam()) {
         agregarBurbuja("⏳ Has enviado demasiados mensajes. Por favor espera un poco.", 'bot');
         return;
