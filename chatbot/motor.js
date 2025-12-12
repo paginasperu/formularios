@@ -7,6 +7,8 @@ const sendBtn = document.getElementById('sendBtn');
 const statusText = document.getElementById('status-text');
 
 let pageLoadedAt = Date.now(); // Captura el tiempo de inicio de la carga de la página.
+let isProcessing = false; // Bandera para prevenir llamadas duplicadas (Recomendación: MANTENER)
+// ==========================
 
 // === INICIO DEL SISTEMA ===
 async function iniciarSistema() {
@@ -161,26 +163,38 @@ async function llamarIA(prompt) {
 
 // === FUNCIÓN PRINCIPAL ===
 async function enviarMensaje() {
+    
+    // --- FIX: EVITAR RE-ENTRADA (Bloqueo de seguridad) ---
+    if (isProcessing) {
+        return; 
+    }
+    isProcessing = true; // Bloquear nuevas llamadas
+
     const trampa = document.getElementById('honeypot');
     
-    // 1. HONEYPOT CHECK (Defensa principal contra bots de spam)
-    if (trampa && trampa.value !== "") return; 
+    // 1. HONEYPOT CHECK
+    if (trampa && trampa.value !== "") {
+        isProcessing = false; 
+        return; 
+    } 
 
-    // 2. TIEMPO MÍNIMO DESDE LA CARGA (Defensa contra ejecución inmediata)
+    // 2. TIEMPO MÍNIMO DESDE LA CARGA
     const MIN_DELAY_MS = 2000; // 2 segundos
     if (Date.now() - pageLoadedAt < MIN_DELAY_MS) {
-        // Podrías agregar una burbuja de error aquí, pero para no molestar al usuario,
-        // simplemente ignoramos la solicitud temprana.
-        console.warn("Mensaje ignorado: Enviado demasiado rápido después de la carga.");
+        isProcessing = false; 
         return; 
     }
 
     const pregunta = userInput.value.trim();
-    if (!pregunta) return;
+    if (!pregunta) {
+        isProcessing = false; 
+        return;
+    }
 
-    // 3. LÍMITE DE SPAM POR SESIÓN (Filtro de cortesía)
+    // 3. LÍMITE DE SPAM POR SESIÓN
     if (!checkSpam()) {
         agregarBurbuja("⏳ Has enviado demasiados mensajes. Por favor espera un poco.", 'bot');
+        isProcessing = false; 
         return;
     }
 
@@ -212,6 +226,7 @@ async function enviarMensaje() {
     } finally {
         userInput.disabled = false;
         sendBtn.disabled = false; 
+        isProcessing = false; // DESBLOQUEAR la bandera al finalizar
         userInput.focus();
     }
 }
