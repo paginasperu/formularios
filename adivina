@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina el Número</title>
+    <!-- Incluye Tailwind CSS para un estilo rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Define una fuente agradable */
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f7f3f0; /* Fondo de color crema */
+        }
+        /* Estilo para los botones */
+        .btn-game {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 0 0 #f97316; /* Sombra naranja profunda */
+        }
+        .btn-game:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 0 #ea580c; /* Sombra más profunda al pasar el ratón */
+        }
+        .btn-game:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 #f97316; /* Efecto de clic */
+        }
+        .input-guess {
+            appearance: none; /* Oculta flechas en Chrome/Safari */
+            -moz-appearance: textfield; /* Oculta flechas en Firefox */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Contenedor principal del juego -->
+    <div id="game-container" class="w-full max-w-md bg-white p-6 sm:p-8 rounded-3xl shadow-2xl border-4 border-yellow-400">
+
+        <!-- Título y Mensaje de la Puntuación -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-indigo-600 mb-4">
+            ¡Adivina el Número!
+        </h1>
+        <p class="text-center text-gray-600 mb-6 text-lg">
+            Estoy pensando en un número entre <span class="font-bold text-green-500">1</span> y <span class="font-bold text-green-500">100</span>.
+        </p>
+
+        <!-- Área de la Interacción del Juego -->
+        <div class="space-y-4">
+            <!-- Entrada de la adivinanza -->
+            <input type="number" id="guess-input" placeholder="Escribe tu número aquí..."
+                   class="input-guess w-full p-4 text-center text-2xl border-4 border-blue-300 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition duration-300"
+                   min="1" max="100">
+
+            <!-- Botón para comprobar -->
+            <button id="check-button"
+                    class="btn-game w-full bg-orange-500 text-white text-2xl font-bold py-3 rounded-xl uppercase tracking-wider">
+                Comprobar
+            </button>
+        </div>
+
+        <!-- Área de Mensajes y Puntuación -->
+        <div class="mt-6 p-4 bg-yellow-100 border-2 border-yellow-300 rounded-xl">
+            <p id="message" class="text-center text-xl font-semibold text-gray-800 transition duration-500 min-h-[30px]">
+                ¡Empecemos a jugar!
+            </p>
+            <p class="text-center mt-3 text-lg text-gray-700">
+                Intentos restantes: <span id="attempts-left" class="font-bold text-red-500">5</span>
+            </p>
+        </div>
+
+        <!-- Botón para reiniciar (inicialmente oculto) -->
+        <button id="restart-button"
+                class="btn-game w-full bg-green-500 text-white text-xl font-bold py-3 rounded-xl uppercase tracking-wider mt-6 hidden"
+                onclick="initializeGame()">
+            Jugar de Nuevo
+        </button>
+
+    </div>
+
+    <script>
+        // Variables globales del juego
+        let secretNumber;
+        let attempts;
+        const maxAttempts = 5;
+
+        // Referencias a elementos del DOM
+        const guessInput = document.getElementById('guess-input');
+        const checkButton = document.getElementById('check-button');
+        const messageDisplay = document.getElementById('message');
+        const attemptsLeftDisplay = document.getElementById('attempts-left');
+        const restartButton = document.getElementById('restart-button');
+
+        // Función para inicializar o reiniciar el juego
+        function initializeGame() {
+            // Genera un número secreto aleatorio entre 1 y 100
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = maxAttempts;
+
+            // Actualiza la interfaz de usuario
+            attemptsLeftDisplay.textContent = attempts;
+            messageDisplay.textContent = "¡Empecemos a jugar!";
+            messageDisplay.classList.remove('text-red-600', 'text-green-600');
+            messageDisplay.classList.add('text-gray-800');
+
+            guessInput.value = '';
+            guessInput.disabled = false;
+            checkButton.classList.remove('hidden');
+            checkButton.disabled = false;
+            restartButton.classList.add('hidden');
+
+            console.log("Número secreto generado:", secretNumber); // Útil para depuración
+        }
+
+        // Función principal para procesar la adivinanza
+        function checkGuess() {
+            const userGuess = parseInt(guessInput.value);
+
+            // Validar la entrada
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                setMessage("Por favor, introduce un número válido entre 1 y 100.", 'text-red-600');
+                return;
+            }
+
+            // Reducir el número de intentos y actualizar la pantalla
+            attempts--;
+            attemptsLeftDisplay.textContent = attempts;
+
+            // Lógica del juego
+            if (userGuess === secretNumber) {
+                // Ganador
+                setMessage(`¡Felicidades! ¡Adivinaste el número ${secretNumber}!`, 'text-green-600');
+                endGame(true);
+            } else if (attempts === 0) {
+                // Perdedor
+                setMessage(`¡Oh no! Te quedaste sin intentos. El número era ${secretNumber}.`, 'text-red-600');
+                endGame(false);
+            } else if (userGuess < secretNumber) {
+                // Número demasiado bajo
+                setMessage("Un poco bajo. ¡Inténtalo con un número más grande!", 'text-blue-600');
+            } else {
+                // Número demasiado alto
+                setMessage("Un poco alto. ¡Inténtalo con un número más pequeño!", 'text-blue-600');
+            }
+
+            // Limpiar la entrada después de adivinar
+            guessInput.value = '';
+        }
+
+        // Función para terminar el juego (ganar o perder)
+        function endGame(isWinner) {
+            guessInput.disabled = true;
+            checkButton.disabled = true;
+            checkButton.classList.add('hidden');
+            restartButton.classList.remove('hidden');
+        }
+
+        // Función auxiliar para actualizar el mensaje y su estilo
+        function setMessage(text, colorClass) {
+            messageDisplay.textContent = text;
+            messageDisplay.classList.remove('text-red-600', 'text-green-600', 'text-blue-600', 'text-gray-800');
+            messageDisplay.classList.add(colorClass);
+        }
+
+        // --- Event Listeners ---
+
+        // Asocia la función checkGuess al botón
+        checkButton.addEventListener('click', checkGuess);
+
+        // Permite adivinar presionando 'Enter' en el campo de entrada
+        guessInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        // Inicializa el juego al cargar la página
+        window.onload = initializeGame;
+
+    </script>
+</body>
+</html>
