@@ -1,5 +1,5 @@
 // MOTOR.JS - Lógica Central + Sistema Multi-IA + Multi-Proxy
-// Sin dependencias de Firebase
+// Código optimizado, limpio y con lógica de failover robusta.
 
 // === VARIABLES GLOBALES ===
 const userInput = document.getElementById('userInput');
@@ -52,9 +52,9 @@ async function iniciarSistema() {
 }
 
 // === FUNCIÓN AUXILIAR: FETCH CON TIMEOUT ===
-// Esto evita que el chat se quede "pensando" infinitamente si un proxy muere.
+// Corta la conexión si excede el tiempo de espera para permitir el failover.
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 10000 } = options; // 10 segundos por defecto
+    const { timeout = 10000 } = options; 
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     const response = await fetch(resource, {
@@ -98,7 +98,6 @@ async function llamarIA(prompt) {
 
             } else if (prov.tipo === "openai-compatible") {
                 // --- LÓGICA OPENAI/DEEPSEEK CON PROXIES ---
-                // Si hay lista de 'proxies', la usa. Si no, usa 'url' única, si no, array vacío.
                 const listaProxies = prov.proxies?.length ? prov.proxies : (prov.url ? [prov.url] : []);
                 
                 if (listaProxies.length === 0) throw new Error(`El proveedor ${prov.nombre} no tiene URLs configuradas.`);
@@ -174,7 +173,7 @@ async function enviarMensaje() {
     agregarBurbuja(pregunta, 'user');
     userInput.value = '';
     userInput.disabled = true;
-    sendBtn.disabled = true; // OPTIMIZACIÓN: Deshabilitar el botón de envío
+    sendBtn.disabled = true; 
     const loadingId = mostrarLoading();
 
     try {
@@ -198,25 +197,28 @@ async function enviarMensaje() {
         agregarBurbuja("😔 Lo siento, tengo problemas de conexión en este momento.", 'bot');
     } finally {
         userInput.disabled = false;
-        sendBtn.disabled = false; // OPTIMIZACIÓN: Re-habilitar el botón de envío
+        sendBtn.disabled = false; 
         userInput.focus();
     }
 }
 
-// === ANTI-SPAM (LocalStorage Seguro) ===
+// === ANTI-SPAM (LocalStorage Seguro y Configurable) ===
 function checkSpam() {
-    const LIMITE = 30; 
-    const TIEMPO = 3600000; // 1 hora
+    const config = window.CHAT_CONFIG || {};
+    // Usamos los valores de config.js, o un default
+    const LIMITE = config.spamLimit || 30; 
+    const DURACION_MINUTOS = config.spamDurationMinutes || 60;
+    const TIEMPO = DURACION_MINUTOS * 60 * 1000; // Convertir minutos a milisegundos
+
     const ahora = Date.now();
     let log = [];
 
-    // Intentamos leer localStorage con seguridad
+    // Intentamos leer localStorage con seguridad (filtro de cortesía)
     try {
         const stored = localStorage.getItem('chat_logs');
         if (stored) log = JSON.parse(stored);
     } catch (e) {
-        console.warn("LocalStorage no disponible, usando memoria temporal.");
-        // Si falla (ej. navegación privada estricta), usamos array en memoria
+        // Fallback a memoria si localStorage falla (ej. modo privado)
         if (!window.tempSpamLog) window.tempSpamLog = [];
         log = window.tempSpamLog;
     }
