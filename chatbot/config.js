@@ -5,6 +5,11 @@ window.CHAT_CONFIG = {
     saludoInicial: "¡Hola! Soy Frankos. ¿En qué puedo ayudarte? 🍗",
     placeholder: "Pregunta precios u horarios...",
 
+    // === LÍMITE DE USO (FILTRO DE CORTESÍA DEL CLIENTE) ===
+    // 30 mensajes cada 60 minutos. Se aplica por navegador.
+    spamLimit: 30,
+    spamDurationMinutes: 60,
+
     // === LISTA DE CEREBROS (Failover Automático) ===
     proveedores: [
         {
