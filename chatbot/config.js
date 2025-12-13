@@ -9,39 +9,35 @@ window.CHAT_CONFIG = {
     spamLimit: 30,
     spamDurationMinutes: 60,
 
-    // === LISTA DE CEREBROS (Estrategia: Estabilidad Máxima -> 1.5) ===
+    // === LISTA DE CEREBROS (Estrategia: DeepSeek -> Claude) ===
+    // Prioridad 1: DeepSeek (Costo bajo, alta cuota)
+    // Prioridad 2: Claude (Respaldo de calidad premium)
     proveedores: [
         {
-            // INTENTO 1: Modelo 1.0 Pro (Máxima Compatibilidad).
-            // Si este falla, significa que la clave está totalmente bloqueada.
-            nombre: "Gemini 1.0 Pro (MAX Compatibilidad)",
-            tipo: "google",
-            apiKey: "AIzaSyDSv_H9HytUFYDPmCQX8JJflZ7405HczAE", 
-            modelo: "gemini-1.5-flash-latest"
-        },
-        {
-            // INTENTO 2: 1.5 Flash (El que deseamos usar a largo plazo)
-            nombre: "Gemini 1.5 Flash (Alta Disponibilidad)",
-            tipo: "google",
-            apiKey: "AIzaSyDSv_H9HytUFYDPmCQX8JJflZ7405HczAE", 
-            modelo: "gemini-1.5-flash-001"
-        },
-        {
-            // INTENTO 3: 1.5 Pro (El de mayor razonamiento)
-            nombre: "Gemini 1.5 Pro (Respaldo)",
-            tipo: "google",
-            apiKey: "AIzaSyDSv_H9HytUFYDPmCQX8JJflZ7405HczAE", 
-            modelo: "gemini-1.5-pro"
-        },
-        {
-            // ÚLTIMO RECURSO: DeepSeek (Solo si tienes proxy configurado)
-            nombre: "DeepSeek (Emergencia)",
-            tipo: "openai-compatible",
+            // PROVEEDOR 1 (PRINCIPAL): DeepSeek
+            // Este será tu motor de chat diario.
+            nombre: "DeepSeek (Prioritario)",
+            tipo: "openai-compatible", // Usamos el tipo "openai-compatible" para DeepSeek
             modelo: "deepseek-chat",
+            // IMPORTANTE: Necesitas una CLAVE DE PAGO y un PROXY funcionando.
             apiKey: "CLAVE_DEEPSEEK_PENDIENTE", 
             proxies: [
-                "https://tu-proxy-1.workers.dev/chat/completions"
+                "https://api.deepseek.com/chat/completions",       // CAUSA FALLO CORS (Solo para prueba)
+                "https://SU_PROXY_CLOUDFLARE_AQUI.workers.dev/v1/chat/completions" // URL REAL DE SU TRABAJADOR
+            ]
+        },
+        {
+            // PROVEEDOR 2 (RESPALDO): Anthropic Claude
+            // Este es un proveedor de alta calidad para usar si DeepSeek falla.
+            // NOTA: Claude requiere un PROXY y puede necesitar un formato de datos diferente al de OpenAI.
+            nombre: "Claude 3 Haiku (Respaldo Premium)",
+            tipo: "openai-compatible", // Se asume que usarás un proxy para normalizar el formato
+            modelo: "claude-3-haiku", 
+            apiKey: "CLAVE_ANTHROPIC_PENDIENTE", 
+            proxies: [
+                "https://SU_PROXY_CLAUDE.workers.dev/v1/messages" // Endpoint de Claude (a través de tu proxy)
             ]
         }
+        // Todos los proveedores Gemini han sido eliminados.
     ]
 };
