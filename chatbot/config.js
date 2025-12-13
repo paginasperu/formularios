@@ -12,24 +12,23 @@ window.CHAT_CONFIG = {
     // === LISTA DE CEREBROS (Estrategia: Estabilidad y Cuota Alta) ===
     proveedores: [
         {
-            // PROVEEDOR PRINCIPAL: Usamos la versión 1.5 Flash ESTÁNDAR.
-            // Esta versión tiene una cuota gratuita de aprox. 1,500 peticiones/día.
-            // NO USAR versiones "exp", "preview" o "2.0" aquí, ya que esas tienen límites de 20-50 al día.
+            // PROVEEDOR PRINCIPAL: Gemini 1.5 Flash
             nombre: "Gemini 1.5 Flash (Alta Disponibilidad)",
             tipo: "google",
-            apiKey: "TU_CLAVE_ACTIVA_DE_GEMINI", 
+            // 👇 ¡PEGA TU CLAVE AQUÍ ABAJO! (Borra el texto de ejemplo y pon tu AIza...)
+            apiKey: "AIzaSyDSv_H9HytUFYDPmCQX8JJflZ7405HczAE", 
             modelo: "gemini-1.5-flash"
         },
         {
-            // RESPALDO: Versión Pro. Más inteligente pero más lenta y con menos cuota (aprox 50/día).
+            // RESPALDO: Gemini 1.5 Pro
             nombre: "Gemini 1.5 Pro (Respaldo)",
             tipo: "google",
-            apiKey: "AIzaSyDSv_H9HytUFYDPmCQX8JJflZ7405HczAE", 
+            // 👇 ¡PEGA TU MISMA CLAVE AQUÍ TAMBIÉN!
+            apiKey: "TU_CLAVE_REAL_AQUI", 
             modelo: "gemini-1.5-pro"
         },
         {
-            // ÚLTIMO RECURSO: DeepSeek
-            // Solo se activará si Google bloquea totalmente tu proyecto.
+            // ÚLTIMO RECURSO: DeepSeek (Solo si tienes proxy configurado)
             nombre: "DeepSeek (Emergencia)",
             tipo: "openai-compatible",
             modelo: "deepseek-chat",
