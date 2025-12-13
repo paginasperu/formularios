@@ -24,7 +24,7 @@ window.CHAT_CONFIG = {
             nombre: "Gemini 1.5 Pro (Respaldo)",
             tipo: "google",
             // 👇 ¡PEGA TU MISMA CLAVE AQUÍ TAMBIÉN!
-            apiKey: "TU_CLAVE_REAL_AQUI", 
+            apiKey: "AIzaSyDSv_H9HytUFYDPmCQX8JJflZ7405HczAE", 
             modelo: "gemini-1.5-pro"
         },
         {
