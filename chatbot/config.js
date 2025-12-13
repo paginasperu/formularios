@@ -1,6 +1,6 @@
 window.CHAT_CONFIG = {
     // === DISEÑO VISUAL ===
-    titulo: "Asistente Dra. Ana",
+    titulo: "Asistente Francos",
     colorPrincipal: "#d73517",
     saludoInicial: "¡Hola! Soy Francos. ¿En qué puedo ayudarte? 🍗",
     placeholder: "Pregunta precios o horarios...",
