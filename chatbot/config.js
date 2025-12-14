@@ -2,10 +2,11 @@
 
 export const CONFIG_BOT = {
     // === CONFIGURACIÓN DE LA EMPRESA (FRONTEND) ===
-    nombre_empresa: "Frankos Chicken", 
+    nombre_empresa: "Frankos Chicken & Grill", 
     saludo_inicial: "¡Hola! Bienvenido a Frankos Chicken. ¿En qué puedo ayudarte hoy?", 
     icono_header: "FC", 
     
+    // NOTA: La personalidad (nombre, tono, idioma, etc.) se ha movido al archivo instrucciones.txt.
 };
 
 export const TECH_CONFIG = {
@@ -14,6 +15,10 @@ export const TECH_CONFIG = {
     modelo: "deepseek-chat",            // Modelo de IA a usar.
     temperatura: 0.5,                   // Nivel de creatividad (Bajo para ser preciso).
     max_retries: 3,                     // Reintentos de conexión.
+    
+    // === ACCESO SIMPLE (UX BARRIER) ===
+    CLAVE_ACCESO: "franko",             // CLAVE para acceso simple (SOLO UX, NO SEGURIDAD REAL)
+    CLAVE_TEXTO: "Ingresa la clave de acceso para continuar:", // Mensaje del prompt de clave
 
     // === CONFIGURACIÓN DE UI ===
     color_principal: "#ea580c",          // Color de acento principal.
@@ -25,7 +30,7 @@ export const TECH_CONFIG = {
     min_input_length: 4,                // Evita consultas vacías o spam.
     
     // Límite de Mensajes para Demostración
-    max_demo_messages: 5,               // Contador de mensajes totales para la demo.
+    max_demo_messages: 3,               // Contador de mensajes totales para la demo.
     
     // Rate Limiting
     rate_limit_max_requests: 5,         // Máximo 5 mensajes...
