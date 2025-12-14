@@ -1,26 +1,27 @@
-// config.js - Configuraciones Globales de Cliente
+// config.js - Configuraciones Globales de Cliente y Desarrollador
 
 export const CONFIG_BOT = {
     // === CONFIGURACIÓN DE LA EMPRESA (FRONTEND) ===
     nombre_empresa: "Frankos Chicken & Grill", 
     saludo_inicial: "¡Hola! Bienvenido a Frankos Chicken. ¿En qué puedo ayudarte hoy?", 
-    icono_header: "FC", // Texto corto (ej: FC) o una URL de imagen (si el diseño lo permite).
+    icono_header: "FC", 
     
     // NOTA: La personalidad (nombre, tono, idioma, etc.) se ha movido al archivo instrucciones.txt.
 };
 
 export const TECH_CONFIG = {
-    // Configuración de la IA
+    // === CONFIGURACIÓN DE LA IA (DESARROLLADOR) ===
+    deepSeekUrl: "https://deepseek-chat-proxy.precios-com-pe.workers.dev", // URL del Proxy (Cloudflare Worker)
     modelo: "deepseek-chat",            // Modelo de IA a usar.
     temperatura: 0.5,                   // Nivel de creatividad (Bajo para ser preciso).
     max_retries: 3,                     // Reintentos de conexión.
 
-    // Configuración de UI
+    // === CONFIGURACIÓN DE UI ===
     color_principal: "#ea580c",          // Color de acento principal.
     whatsapp: "51999999999",            // SOLO NÚMEROS de WhatsApp para soporte.
     placeholder: "Escribe tu consulta...", // Texto del input
     
-    // Seguridad (Frontend)
+    // === SEGURIDAD (FRONTEND) ===
     max_length: 50,                     // Límite físico de caracteres en el input.
     min_input_length: 4,                // Evita consultas vacías o spam.
     
