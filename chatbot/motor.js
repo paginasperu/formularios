@@ -41,7 +41,7 @@ async function cargarYAnalizarContexto() {
         document.getElementById('status-text').innerText = "Cargando sistema...";
 
         const [resInst, resData] = await Promise.all([
-            fetch('instruccion.txt'),
+            fetch('instrucciones.txt'),
             fetch('data.txt')
         ]);
 
