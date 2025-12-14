@@ -1,11 +1,12 @@
 // funciones.js - Lógica de Negocio, Seguridad y Conexión
 
-// RUTA ACTUALIZADA: config.js -> ajustes.js
-import { TECH_CONFIG, CONFIG_BOT } from './ajustes.js'; 
+// IMPORTACIONES MODULARES
+import { APP_CONFIG, UI_CONFIG, AI_CONFIG, SEGURIDAD_CONFIG } from './ajustes.js'; 
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'; 
 
 // === VARIABLES GLOBALES ===
 let systemInstruction = ""; 
+let conversationHistory = []; // Almacena el historial para el contexto
 // Elementos del Chat
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -18,22 +19,21 @@ const keySubmit = document.getElementById('keySubmit');
 const keyPrompt = document.getElementById('key-prompt');  
 const keyError = document.getElementById('keyError');     
 
-const WA_LINK = `https://wa.me/${TECH_CONFIG.whatsapp}`;
+const WA_LINK = `https://wa.me/${UI_CONFIG.WHATSAPP_NUMERO}`;
 const requestTimestamps = []; 
 let messageCount = 0;         
 
-// === SISTEMA DE SEGURIDAD: RATE LIMITING (Sliding Window) ===
+// === SISTEMA DE SEGURIDAD: RATE LIMITING (Sliding Window - Frontend) ===
 function checkRateLimit() {
     const now = Date.now();
-    const windowMs = TECH_CONFIG.rate_limit_window_seconds * 1000;
+    const windowMs = SEGURIDAD_CONFIG.RATE_LIMIT_WINDOW_SECONDS * 1000;
     
-    // Limpiar timestamps viejos
     while (requestTimestamps.length > 0 && requestTimestamps[0] < now - windowMs) {
         requestTimestamps.shift();
     }
 
-    // Verificar si excede límite
-    if (requestTimestamps.length >= TECH_CONFIG.rate_limit_max_requests) {
+    if (requestTimestamps.length >= SEGURIDAD_CONFIG.RATE_LIMIT_MAX_REQUESTS) {
+        if (AI_CONFIG.ENABLE_LOGGING) console.warn("Rate limit activado por IP.");
         return { 
             limitReached: true, 
             retryAfter: Math.ceil((requestTimestamps[0] + windowMs - now) / 1000) 
@@ -50,8 +50,8 @@ async function cargarYAnalizarContexto() {
         document.getElementById('status-text').innerText = "Cargando sistema...";
 
         const [resInst, resData] = await Promise.all([
-            fetch('instrucciones.txt'),
-            fetch('datos.txt')
+            fetch('./instrucciones.txt'),
+            fetch('./datos.txt')
         ]);
 
         if (!resInst.ok || !resData.ok) throw new Error("Error cargando archivos base");
@@ -62,10 +62,10 @@ async function cargarYAnalizarContexto() {
         // El textoInstruccion ahora es solo el prompt.
         let instruccionPrompt = textoInstruccion;
         
-        // Reemplazo de Placeholders (solo los que dependen de CONFIG_BOT y TECH_CONFIG)
+        // Reemplazo de Placeholders
         instruccionPrompt = instruccionPrompt
-            .replace(/\[whatsapp\]/g, TECH_CONFIG.whatsapp)
-            .replace(/\[nombre_empresa\]/g, CONFIG_BOT.nombre_empresa || 'Empresa');
+            .replace(/\[whatsapp\]/g, UI_CONFIG.WHATSAPP_NUMERO)
+            .replace(/\[nombre_empresa\]/g, APP_CONFIG.NOMBRE_EMPRESA || 'Empresa');
 
         // Adjuntar Data
         instruccionPrompt += `\n\n--- BASE DE CONOCIMIENTO (USAR SOLO ESTO) ---\n${textoData}`;
@@ -73,7 +73,7 @@ async function cargarYAnalizarContexto() {
         return instruccionPrompt;
 
     } catch (error) {
-        console.error("Error crítico:", error);
+        if (AI_CONFIG.ENABLE_LOGGING) console.error("Error crítico en carga de contexto:", error);
         return "Error de sistema. Contacte a soporte.";
     }
 }
@@ -81,22 +81,21 @@ async function cargarYAnalizarContexto() {
 
 // === LÓGICA DE ACCESO ===
 function setupAccessGate() {
-    keyPrompt.innerText = TECH_CONFIG.CLAVE_TEXTO;
-    keySubmit.style.backgroundColor = TECH_CONFIG.color_principal;
+    keyPrompt.innerText = UI_CONFIG.TEXTO_CLAVE_ACCESO;
+    keySubmit.style.backgroundColor = UI_CONFIG.COLOR_PRIMARIO;
     
     const checkKey = () => {
         const input = keyInput.value.trim().toLowerCase();
-        const realKey = TECH_CONFIG.CLAVE_ACCESO.toLowerCase();
+        const realKey = SEGURIDAD_CONFIG.CLAVE_ACCESO.toLowerCase();
+
+        // Lógica de Bypass: Si la clave está VACÍA ("") en ajustes, entra directamente.
+        const isBypassEnabled = realKey === "";
+        const isCorrectKey = input === realKey;
         
-        // --- LÓGICA DE TRUCO DE DESARROLLO ---
-        const isDevBypass = (realKey === 'devmode' && input === '');
-        const isCorrectKey = (input === realKey);
-        
-        if (isCorrectKey || isDevBypass) {
+        if (isCorrectKey || isBypassEnabled) {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
             chatInterface.classList.remove('hidden');
-            // Continuar con la carga de la IA real después del acceso exitoso
             cargarIA(); 
         } else {
             keyError.classList.remove('hidden');
@@ -114,22 +113,21 @@ function setupAccessGate() {
     });
 }
 
-// === INICIO DEL CHAT (Se llama solo si la clave es correcta) ===
+// === INICIO DEL CHAT ===
 async function cargarIA() {
-    systemInstruction = await cargarYAnalizarContexto(); 
+    systemInstruction = await cargarYAnalizarContexto();
     
-    // UI Setup (Usando los valores de CONFIG_BOT)
-    document.documentElement.style.setProperty('--chat-color', TECH_CONFIG.color_principal);
-    document.getElementById('header-title').innerText = CONFIG_BOT.nombre_empresa || "Chat";
-    document.getElementById('bot-welcome-text').innerText = CONFIG_BOT.saludo_inicial || "Hola.";
+    // UI Setup
+    document.documentElement.style.setProperty('--chat-color', UI_CONFIG.COLOR_PRIMARIO);
+    document.getElementById('header-title').innerText = APP_CONFIG.NOMBRE_EMPRESA || "Chat";
+    document.getElementById('bot-welcome-text').innerText = UI_CONFIG.SALUDO_INICIAL || "Hola.";
     document.getElementById('status-text').innerText = "En línea 🟢";
     
-    // Actualizar el ícono del header
-    document.getElementById('header-icon-initials').innerText = CONFIG_BOT.icono_header; 
+    document.getElementById('header-icon-initials').innerText = UI_CONFIG.ICONO_HEADER; 
     
     // Input Security Setup
-    userInput.setAttribute('maxlength', TECH_CONFIG.max_length);
-    userInput.setAttribute('placeholder', TECH_CONFIG.placeholder);
+    userInput.setAttribute('maxlength', SEGURIDAD_CONFIG.MAX_LENGTH_INPUT);
+    userInput.setAttribute('placeholder', UI_CONFIG.PLACEHOLDER_INPUT);
     
     toggleInput(true);
 
@@ -142,13 +140,11 @@ async function cargarIA() {
 
 // === FUNCIÓN PRINCIPAL DE INICIO ===
 async function iniciarSistema() {
-    // Primero, preparamos la puerta de acceso y el UI
-    document.documentElement.style.setProperty('--chat-color', TECH_CONFIG.color_principal);
+    document.documentElement.style.setProperty('--chat-color', UI_CONFIG.COLOR_PRIMARIO);
     
-    if (TECH_CONFIG.CLAVE_ACCESO) {
+    if (SEGURIDAD_CONFIG.CLAVE_ACCESO) {
         setupAccessGate();
     } else {
-        // Si no hay clave configurada, cargamos la IA directamente (como antes)
         accessGate.classList.add('hidden');
         chatInterface.classList.remove('hidden');
         cargarIA();
@@ -156,30 +152,41 @@ async function iniciarSistema() {
 }
 
 
-// === LÓGICA PRINCIPAL (procesarMensaje sin cambios) ===
+// === LÓGICA PRINCIPAL ===
 async function procesarMensaje() {
     const textoUsuario = userInput.value.trim();
     
-    // === 1. BLOQUEO DE DEMO (CAPA DE UX) ===
-    if (messageCount >= TECH_CONFIG.max_demo_messages) {
-        const demoEndMsg = `🛑 ¡Demo finalizado! Has alcanzado el límite de ${TECH_CONFIG.max_demo_messages} mensajes. Por favor, contáctanos para obtener tu propia licencia.`;
-        if (messageCount === TECH_CONFIG.max_demo_messages) { // Mostrar el mensaje final solo una vez
+    // 1. BLOQUEO DE DEMO Y UX DE ALERTA
+    if (messageCount >= SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES) {
+        const demoEndMsg = `🛑 ¡Demo finalizado! Has alcanzado el límite de ${SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES} mensajes. Por favor, contáctanos para continuar.`;
+        if (messageCount === SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES) {
              agregarBurbuja(demoEndMsg, 'bot');
-             messageCount++; // Para que no vuelva a entrar en esta condición
+             messageCount++;
         }
         userInput.value = '';
-        toggleInput(false); // Bloquea la interacción
+        toggleInput(false);
         return;
     }
     
-    // 2. Validación de Input (Seguridad Básica)
+    // Alerta de límite próximo
+    if (UI_CONFIG.SHOW_REMAINING_MESSAGES && 
+        messageCount >= SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES - UI_CONFIG.WARNING_THRESHOLD &&
+        messageCount < SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES) {
+        
+        const remaining = SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES - messageCount;
+        agregarBurbuja(`⚠️ Atención: Te quedan ${remaining} mensaje(s) de demostración.`, 'bot');
+    }
+
+
+    // 2. Validación de Input
     if (!textoUsuario) return;
-    if (textoUsuario.length < TECH_CONFIG.min_input_length) {
+    if (textoUsuario.length < SEGURIDAD_CONFIG.MIN_LENGTH_INPUT || textoUsuario.length > SEGURIDAD_CONFIG.MAX_LENGTH_INPUT) {
+        if (AI_CONFIG.ENABLE_LOGGING) console.warn("Input no válido por longitud.");
         userInput.value = ''; 
         return; 
     }
 
-    // 3. Rate Limiting (Protección de Tokens/Costos)
+    // 3. Rate Limiting (Frontend)
     const limit = checkRateLimit();
     if (limit.limitReached) {
         agregarBurbuja(`⚠️ Demasiadas consultas. Espera ${limit.retryAfter}s.`, 'bot');
@@ -188,36 +195,42 @@ async function procesarMensaje() {
     }
 
     agregarBurbuja(textoUsuario, 'user');
+    
+    // Agregar mensaje del usuario al historial
+    conversationHistory.push({ role: "user", content: textoUsuario });
+    
     userInput.value = '';
     toggleInput(false);
     const loadingId = mostrarLoading();
     
     try {
-        const respuesta = await llamarIA(textoUsuario);
+        const respuesta = await llamarIA(); // Ya no necesita textoUsuario como argumento
         document.getElementById(loadingId)?.remove();
         
+        // Agregar respuesta del bot al historial
+        conversationHistory.push({ role: "assistant", content: respuesta });
+
         // Procesar respuesta
         const whatsappCheck = `[whatsapp_link]`;
         let htmlFinal = "";
 
         if (respuesta.includes(whatsappCheck)) {
             const cleanText = respuesta.replace(whatsappCheck, '');
-            const btnLink = `<a href="${WA_LINK}?text=${encodeURIComponent('Ayuda con: ' + textoUsuario)}" target="_blank" class="chat-btn">Hablar con Asesor 🟢</a>`;
+            const btnLink = `<a href="${WA_LINK}?text=${encodeURIComponent('Ayuda con: ' + textoUsuario)}" target="_blank" class="chat-btn">${UI_CONFIG.WHATSAPP_NUMERO}</a>`;
             htmlFinal = marked.parse(cleanText) + btnLink;
         } else {
             htmlFinal = marked.parse(respuesta);
         }
         
         agregarBurbuja(htmlFinal, 'bot');
-        messageCount++; // Incrementa el contador después de una respuesta exitosa
+        messageCount++;
 
     } catch (e) {
         document.getElementById(loadingId)?.remove();
-        console.error(e);
-        agregarBurbuja(`Error de conexión. <a href="${WA_LINK}" class="chat-btn">WhatsApp</a>`, 'bot');
+        if (AI_CONFIG.ENABLE_LOGGING) console.error("Error en llamada IA:", e);
+        agregarBurbuja(`Error de conexión o timeout. <a href="${WA_LINK}" class="chat-btn">WhatsApp</a>`, 'bot');
     } finally {
-        // Chequea si esta última respuesta alcanzó el límite
-        if (messageCount >= TECH_CONFIG.max_demo_messages) {
+        if (messageCount >= SEGURIDAD_CONFIG.MAX_DEMO_MESSAGES) {
             toggleInput(false);
         } else {
             toggleInput(true);
@@ -226,28 +239,41 @@ async function procesarMensaje() {
     }
 }
 
-// === API CALL (llamarIA sin cambios) ===
-async function llamarIA(pregunta) {
-    const { modelo, temperatura, max_retries, deepSeekUrl } = TECH_CONFIG; 
-    let delay = 1000;
-
-    const messages = [
-        { role: "system", content: systemInstruction },
-        { role: "user", content: pregunta }
+// === API CALL ===
+async function llamarIA() {
+    const { MODELO, TEMPERATURA, RETRY_LIMIT, RETRY_DELAY_MS, URL_PROXY, TIMEOUT_MS, MAX_TOKENS_RESPONSE, MAX_CONTEXT_MESSAGES } = AI_CONFIG; 
+    let delay = RETRY_DELAY_MS;
+    
+    // Construir la lista de mensajes con el historial
+    let messages = [
+        { role: "system", content: systemInstruction }
     ];
 
-    for (let i = 0; i < max_retries; i++) {
+    // Añadir el historial limitado (para RAG y contexto)
+    const contextStart = Math.max(0, conversationHistory.length - MAX_CONTEXT_MESSAGES);
+    messages = messages.concat(conversationHistory.slice(contextStart));
+
+
+    for (let i = 0; i < RETRY_LIMIT; i++) {
         try {
-            const res = await fetch(deepSeekUrl, {
+            // Configurar el fetch con AbortController para el timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+            const res = await fetch(URL_PROXY, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: modelo, 
+                    model: MODELO, 
                     messages: messages, 
-                    temperature: temperatura,
+                    temperature: TEMPERATURA,
+                    max_tokens: MAX_TOKENS_RESPONSE, // Límite de tokens de salida (Costo)
                     stream: false
-                })
+                }),
+                signal: controller.signal // Aplicar el timeout
             });
+
+            clearTimeout(timeoutId); // Limpiar timeout si la respuesta llega a tiempo
 
             if (!res.ok) throw new Error(`API Error: ${res.status}`);
             const data = await res.json();
@@ -255,14 +281,17 @@ async function llamarIA(pregunta) {
             return data.choices?.[0]?.message?.content || "No entendí, ¿puedes repetir?";
 
         } catch (err) {
-            if (i === max_retries - 1) throw err;
+            if (err.name === 'AbortError') {
+                throw new Error("API Timeout");
+            }
+            if (i === RETRY_LIMIT - 1) throw err;
             await new Promise(r => setTimeout(r, delay));
-            delay *= 2;
+            delay *= 2; // Backoff exponencial
         }
     }
 }
 
-// === UI UTILS (sin cambios) ===
+// === UI UTILS ===
 function toggleInput(state) {
     userInput.disabled = !state;
     sendBtn.disabled = !state;
@@ -272,7 +301,7 @@ function agregarBurbuja(html, tipo) {
     const div = document.createElement('div');
     if (tipo === 'user') {
         div.className = "p-3 max-w-[85%] shadow-sm text-sm text-white rounded-2xl rounded-tr-none self-end ml-auto";
-        div.style.backgroundColor = TECH_CONFIG.color_principal;
+        div.style.backgroundColor = UI_CONFIG.COLOR_PRIMARIO;
         div.textContent = html; 
     } else {
         div.className = "p-3 max-w-[85%] shadow-sm text-sm bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-tl-none self-start mr-auto bot-bubble";
@@ -289,6 +318,7 @@ function mostrarLoading() {
     div.className = "p-3 max-w-[85%] bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start flex gap-1";
     div.innerHTML = `<div class="w-2 h-2 rounded-full typing-dot"></div><div class="w-2 h-2 rounded-full typing-dot" style="animation-delay:0.2s"></div><div class="w-2 h-2 rounded-full typing-dot" style="animation-delay:0.4s"></div>`;
     chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight; 
     return id;
 }
 
