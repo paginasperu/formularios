@@ -6,12 +6,7 @@ export const CONFIG_BOT = {
     saludo_inicial: "¡Hola! Bienvenido a Frankos Chicken. ¿En qué puedo ayudarte hoy?", 
     icono_header: "FC", // Texto corto (ej: FC) o una URL de imagen (si el diseño lo permite).
     
-    // === PERSONALIDAD DE LA IA (Se usa en el System Prompt) ===
-    nombre: "Fedeliza",             // Nombre del asistente IA
-    tono: "amable, profesional y directo", // Estilo de respuesta
-    idioma: "español peruano",      // Idioma principal
-    emoji_principal: "🍗",          // Emoji para usar con moderación
-    moneda: "Soles (S/)"            // Moneda mencionada en el prompt
+    // NOTA: La personalidad (nombre, tono, idioma, etc.) se ha movido al archivo instrucciones.txt.
 };
 
 export const TECH_CONFIG = {
@@ -22,7 +17,7 @@ export const TECH_CONFIG = {
 
     // Configuración de UI
     color_principal: "#ea580c",          // Color de acento principal.
-    whatsapp: "51949973277",            // SOLO NÚMEROS de WhatsApp para soporte.
+    whatsapp: "51999999999",            // SOLO NÚMEROS de WhatsApp para soporte.
     placeholder: "Escribe tu consulta...", // Texto del input
     
     // Seguridad (Frontend)
