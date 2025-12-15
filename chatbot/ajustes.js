@@ -1,79 +1,77 @@
-// ajustes.js - Configuraciones Globales PROFESIONALES Y MODULARES
-
-// ═══════════════════════════════════════════════════════════════
-// 1. CONFIGURACIÓN DE LA APLICACIÓN (APP_CONFIG)
-// ═══════════════════════════════════════════════════════════════
-export const APP_CONFIG = {
-    NOMBRE_EMPRESA: "Frankos Chicken",       // Nombre visible principal (ej. en el Header).
-    VERSION: "1.0.0",                       // Versión actual de la aplicación.
-    MODO_ENTORNO: "development",            
+export const CONFIG = {
     
-    // SEO Y METADATOS (CRÍTICO)
-    TITLE_SUFFIX: "| Asistente de Pedidos y Soporte", 
-    META_DESCRIPTION: "Chatea con nuestro asistente virtual para realizar pedidos, consultar el menú y obtener soporte rápido en Frankos Chicken.",
-};
+    NOMBRE_EMPRESA: "Frankos Chicken",       
+    // Nombre visible principal (ej. en el Header).
 
-// ═══════════════════════════════════════════════════════════════
-// 2. CONFIGURACIÓN DE LA INTERFAZ (UI_CONFIG)
-// ═══════════════════════════════════════════════════════════════
-export const UI_CONFIG = {
-    // Branding Visual
-    COLOR_PRIMARIO: "#ea580c",              // Color de acento principal (botones, header, burbujas del usuario).
-    ICONO_HEADER: "FC",                     // Texto o Emoji que aparece en el header del chat (Fallback si no hay LOGO_URL).
-    FAVICON_EMOJI: "🐔",                    // Icono que sale en la pestaña del navegador.
-    LOGO_URL: "https://i.ibb.co/W4m7vxxn/logo-frankos-chicken.jpg",                           // URL completa a un logo de imagen (ej: "https://tudominio.com/logo.png"). Dejar "" para usar ICONO_HEADER.
-    
-    // Textos Estáticos (Visibles al Cliente)
+    COLOR_PRIMARIO: "#ea580c",              
+    // Color de acento (header, botones, burbujas del usuario).
+
+    ICONO_HEADER: "FC",                     
+    // Texto o Emoji en header (fallback a LOGO_URL).
+
+    FAVICON_EMOJI: "🐔",                    
+    // Ícono de la pestaña del navegador.
+
+    LOGO_URL: "https://i.ibb.co/W4m7vxxn/logo-frankos-chicken.jpg",                           
+    // URL del logo (si está, oculta ICONO_HEADER). Debe ser circular.
+
+    WHATSAPP_NUMERO: "51949973277",         
+    // Número de WhatsApp para CTA.
+
     SALUDO_INICIAL: "¡Hola! Bienvenido a Frankos Chicken. ¿En qué puedo ayudarte hoy?",
-    TEXTO_CLAVE_ACCESO: "Ingresa la clave de acceso para continuar:",
-    TEXTO_BOTON_ACCESO: "Ingresar al Chat", // Texto del botón de la puerta de acceso.
+    // Mensaje de bienvenida del bot.
+
     PLACEHOLDER_INPUT: "Escribe tu consulta...",
-    FOOTER_TEXTO: "Chat oficial.pe",         // Texto en el pie de página del chat.
-    
-    // Integración
-    WHATSAPP_NUMERO: "51949973277",         // Número de WhatsApp para el CTA de ayuda.
-    
-    // UX Avanzada (Modo Demo)
-    SHOW_REMAINING_MESSAGES: true,          // Muestra al usuario cuántos mensajes de demo quedan.
-    WARNING_THRESHOLD: 1,                   // Número de mensajes restantes para mostrar la alerta de advertencia.
-};
+    // Texto de ayuda en la caja de texto.
 
+    SHOW_REMAINING_MESSAGES: true,          
+    // Muestra cuántos mensajes de demo quedan.
 
-// ═══════════════════════════════════════════════════════════════
-// 3. CONFIGURACIÓN DEL MODELO DE IA Y CONEXIÓN (AI_CONFIG)
-// ═══════════════════════════════════════════════════════════════
-export const AI_CONFIG = {
+    WARNING_THRESHOLD: 1,                   
+    // Mensajes restantes para mostrar alerta.
+
     URL_PROXY: "https://deepseek-chat-proxy.precios-com-pe.workers.dev",
-    MODELO: "deepseek-chat",                // Modelo de DeepSeek a utilizar.
-    TEMPERATURA: 0.5,                       // Creatividad de la IA (0.0 muy preciso, 1.0 muy creativo).
-    
-    // Control de Robustez y Costos
-    TIMEOUT_MS: 15000,                      // Tiempo máximo de espera para la API (15 segundos).
-    MAX_TOKENS_RESPONSE: 300,               // MÁXIMO DE TOKENS que la IA puede generar (Control de Costos).
-    MAX_CONTEXT_MESSAGES: 4,                // Cuántos mensajes previos se envían como contexto.
-    
-    // Manejo de Reintentos
-    RETRY_LIMIT: 3,                         // Número de veces que se reintenta la llamada a la API.
-    RETRY_DELAY_MS: 1000,                   // Delay inicial para el Backoff Exponencial.
-    ENABLE_LOGGING: true,                   // Activar/desactivar logs de consola para debug.
-};
+    // URL del proxy que llama al modelo de IA.
 
+    MODELO: "deepseek-chat",                
+    // Modelo de DeepSeek a utilizar.
 
-// ═══════════════════════════════════════════════════════════════
-// 4. CONFIGURACIÓN DE SEGURIDAD Y LÍMITES (SEGURIDAD_CONFIG)
-// ═══════════════════════════════════════════════════════════════
-export const SEGURIDAD_CONFIG = {
-    // Acceso
-    CLAVE_ACCESO: "1511",                       // Clave requerida para entrar al chat. Dejar "" para bypass.
-    
-    // Validación de Input
-    MIN_LENGTH_INPUT: 4,                    // Longitud mínima para un mensaje válido.
-    MAX_LENGTH_INPUT: 150,                  // Longitud máxima del mensaje (Estratégico para modo Demo).
-    
-    // Límite de Demo (Frontend)
-    MAX_DEMO_MESSAGES: 5,                   // Límite de mensajes para la demo por sesión.
-    
-    // Rate Limiting (Frontend - Complementa al Worker)
-    RATE_LIMIT_MAX_REQUESTS: 5,             // Máximo de requests permitidas en la ventana.
-    RATE_LIMIT_WINDOW_SECONDS: 60,          // Ventana de tiempo (en segundos) para el Rate Limit.
+    TEMPERATURA: 0.1,                       
+    // Creatividad de la IA (0.0: Preciso, 1.0: Creativo).
+
+    TIMEOUT_MS: 15000,                      
+    // Tiempo máximo de espera para la API (milisegundos).
+
+    MAX_TOKENS_RESPONSE: 150,               
+    // Máximo de tokens que puede generar la IA (Control de Costos).
+
+    MAX_HISTORIAL_MESSAGES: 4,              
+    // Cuántos mensajes previos se envían como contexto (memoria).
+
+    RETRY_LIMIT: 3,                         
+    // Número de reintentos en caso de fallo de API.
+
+    RETRY_DELAY_MS: 1000,                   
+    // Delay inicial para reintentos.
+
+    CLAVE_ACCESO: "",                       
+    // Clave de acceso requerida. Dejar "" para bypass.
+
+    CLAVE_EXPIRACION: "2025-12-15T06:00:00Z", 
+    // Fecha y hora (ISO 8601) de expiración de la CLAVE_ACCESO.
+
+    MIN_LENGTH_INPUT: 4,                    
+    // Longitud mínima para un mensaje válido.
+
+    MAX_LENGTH_INPUT: 150,                  
+    // Longitud máxima del mensaje.
+
+    MAX_DEMO_MESSAGES: 5,                   
+    // Límite de mensajes para la demo por sesión.
+
+    RATE_LIMIT_MAX_REQUESTS: 5,             
+    // Máximo de requests permitidas en la ventana.
+
+    RATE_LIMIT_WINDOW_SECONDS: 60,          
+    // Ventana de tiempo (en segundos) para el Rate Limit.
 };
