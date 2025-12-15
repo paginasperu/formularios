@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"> 
     
-    <title>Chatbot Asistente | Cargando...</title> 
-    <meta name="description" content="Chatbot modular de IA para atención al cliente y pedidos.">
+    <title>Chatbot</title> 
+    <meta name="description" content="Chatbot automático e inteligente con IA para ventas y atención al cliente.">
     <meta name="theme-color" content="#ea580c">
 
     <meta property="og:title" content="Asistente Virtual">
@@ -73,8 +73,7 @@
 
         /* Loading/Typing Indicator */
         .typing-dot {
-            /* CORRECCIÓN: SE AÑADE LA ANIMACIÓN */
-            animation: bounce 1s infinite; /* <-- ESTO FALTABA */
+            animation: bounce 1s infinite; 
             animation-timing-function: ease-in-out;
             background-color: var(--chat-color); 
             will-change: transform; 
@@ -129,23 +128,23 @@
                         style="background-color: var(--chat-color);"
                         aria-label="Enviar mensaje">➤</button>
             </div>
-            <p id="footer-text" class="text-center text-[10px] text-gray-400 mt-2"></p>
+            <p id="footer-text" class="text-center text-[10px] text-gray-400 mt-2">Chat oficial.pe</p>
         </div>
     </div>
     
     <div id="access-gate" class="access-gate-container w-full h-full bg-white">
-        <h2 id="key-prompt" class="text-lg font-semibold mb-4 text-gray-700"></h2>
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Contraseña</h2> 
         <label for="keyInput" class="sr-only">Clave de acceso</label>
         <input type="password" id="keyInput" 
                class="w-64 border border-gray-300 rounded-lg px-4 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
                autocomplete="current-password">
         <button id="keySubmit" 
                 class="mt-4 px-6 py-2 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
-                style="background-color: var(--chat-color);"></button>
+                style="background-color: var(--chat-color);">INGRESAR</button>
         <p id="keyError" class="text-red-500 text-xs mt-2 hidden" role="alert">Clave incorrecta. Intenta de nuevo.</p>
     </div>
 
-    <script type="module" src="funciones.js"></script> 
+    <script type="module" src="main.js"></script>
     <noscript>
         <div class="p-4 text-center text-red-600">Este chat requiere JavaScript para funcionar.</div>
     </noscript>
