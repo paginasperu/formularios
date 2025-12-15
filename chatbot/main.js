@@ -90,20 +90,66 @@ function checkRateLimit() {
     return { limitReached: false };
 }
 
+// Función simplificada para usar el ID directamente
+function getExportUrl(sheetId) {
+    if (!sheetId || typeof sheetId !== 'string') {
+        console.error("ID de Google Sheets inválido.");
+        return null;
+    }
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+}
+
+
 function setupAccessGate() {
     keySubmit.style.backgroundColor = CONFIG.COLOR_PRIMARIO;
     
+    let sheetAccessKey = "";
+    let sheetExpirationDate = "";
+
+    const fetchSheetConfig = async () => {
+        try {
+            keyError.innerText = "Cargando configuración de seguridad...";
+            keyError.classList.remove('hidden');
+
+            const exportUrl = getExportUrl(CONFIG.SHEET_ID);
+            if (!exportUrl) throw new Error("ID de configuración inválida.");
+
+            const res = await fetch(exportUrl);
+            if (!res.ok) throw new Error("No se pudo cargar la configuración.");
+
+            const text = await res.text();
+            
+            const jsonText = text.replace(/.*google.visualization.Query.setResponse\((.*)\);/s, '$1');
+            const data = JSON.parse(jsonText);
+
+            const row = data.table.rows[0].c;
+            sheetAccessKey = row[0].v.toLowerCase(); 
+            sheetExpirationDate = row[1].v; 
+            
+            keyError.classList.add('hidden');
+            keyError.innerText = "";
+            return true;
+
+        } catch (error) {
+            console.error("Error al cargar configuración de Sheet:", error);
+            keyError.innerText = "Error: No se pudo obtener la clave del servidor.";
+            keyError.classList.remove('hidden');
+            return false;
+        }
+    };
+
     const isKeyExpired = () => {
-        if (!CONFIG.CLAVE_EXPIRACION) return false;
-        
-        const expirationDate = new Date(CONFIG.CLAVE_EXPIRACION); 
+        if (!sheetExpirationDate) return false;
+        const expirationDate = new Date(sheetExpirationDate); 
         const now = new Date(); 
-        
         return now.getTime() > expirationDate.getTime();
     };
-    
-    const checkKey = () => {
-        const realKey = CONFIG.CLAVE_ACCESO.toLowerCase();
+
+    const checkKey = async () => {
+        const loaded = await fetchSheetConfig(); 
+        if (!loaded) return; 
+
+        const realKey = sheetAccessKey; 
         
         const isBypassEnabled = realKey === "" || isKeyExpired();
 
@@ -135,6 +181,8 @@ function setupAccessGate() {
             checkKey();
         }
     });
+    
+    fetchSheetConfig(); 
 }
 
 async function cargarIA() {
@@ -145,7 +193,7 @@ async function cargarIA() {
     document.getElementById('status-text').innerText = "En línea 🟢";
     
     userInput.setAttribute('maxlength', CONFIG.MAX_LENGTH_INPUT);
-    userInput.setAttribute('placeholder', CONFIG.PLACEHOLDER_INPUT);
+    userInput.setAttribute('placeholder', CONFIG.PLACEPLDER_INPUT);
     
     toggleInput(true);
 
@@ -158,7 +206,7 @@ async function cargarIA() {
 async function iniciarSistema() {
     aplicarConfiguracionGlobal();
     
-    if (CONFIG.CLAVE_ACCESO) {
+    if (CONFIG.SHEET_ID) {
         setupAccessGate();
     } else {
         accessGate.classList.add('hidden');
