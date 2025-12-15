@@ -90,7 +90,7 @@ function checkRateLimit() {
     return { limitReached: false };
 }
 
-// Función simplificada para usar el ID directamente
+
 function getExportUrl(sheetId) {
     if (!sheetId || typeof sheetId !== 'string') {
         console.error("ID de Google Sheets inválido.");
@@ -123,7 +123,9 @@ function setupAccessGate() {
             const data = JSON.parse(jsonText);
 
             const row = data.table.rows[0].c;
-            sheetAccessKey = row[0].v.toLowerCase(); 
+            
+            // CORRECCIÓN: Asegurar que el valor es una cadena antes de llamar a toLowerCase()
+            sheetAccessKey = String(row[0].v).toLowerCase(); 
             sheetExpirationDate = row[1].v; 
             
             keyError.classList.add('hidden');
@@ -193,7 +195,7 @@ async function cargarIA() {
     document.getElementById('status-text').innerText = "En línea 🟢";
     
     userInput.setAttribute('maxlength', CONFIG.MAX_LENGTH_INPUT);
-    userInput.setAttribute('placeholder', CONFIG.PLACEPLDER_INPUT);
+    userInput.setAttribute('placeholder', CONFIG.PLACEHOLDER_INPUT);
     
     toggleInput(true);
 
