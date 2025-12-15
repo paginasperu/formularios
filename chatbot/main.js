@@ -124,8 +124,9 @@ function setupAccessGate() {
 
             const row = data.table.rows[0].c;
             
-            // 1. CLAVE DE ACCESO: Asegura que sea una cadena, limpia espacios y minúsculas.
-            sheetAccessKey = row[0] && row[0].v !== null ? String(row[0].v).trim().toLowerCase() : ""; 
+            // 1. CLAVE DE ACCESO: Si row[0].v es null, rawAccessValue será "", garantizando que sheetAccessKey sea "".
+            const rawAccessValue = row[0] && row[0].v !== null ? row[0].v : "";
+            sheetAccessKey = String(rawAccessValue).trim().toLowerCase(); 
             
             // 2. EXTRACCIÓN DE FECHA: Prioriza el formato formateado ('f') para obtener la cadena DD-MM-YYYY HH:mm:ss.
             let rawExpiration = row[1];
@@ -160,7 +161,7 @@ function setupAccessGate() {
         
         if (match) {
             const day = parseInt(match[1]);
-            const month = parseInt(match[2]) - 1; // JS month es 0-indexed (Enero=0)
+            const month = parseInt(match[2]) - 1; 
             const year = parseInt(match[3]);
             
             const timeMatch = match[4].match(/^(\d{2}):(\d{2}):(\d{2})$/);
@@ -168,8 +169,6 @@ function setupAccessGate() {
             const minutes = parseInt(timeMatch[2]);
             const seconds = parseInt(timeMatch[3]);
 
-            // **CORRECCIÓN FINAL:** Usamos el constructor local Date(Y, M, D, H, m, s)
-            // Esto obliga a JS a interpretar la fecha en la hora local del dispositivo.
             expirationDate = new Date(year, month, day, hours, minutes, seconds); 
         
         } else {
@@ -185,7 +184,6 @@ function setupAccessGate() {
              return false;
         }
         
-        // Usa >= para incluir el momento exacto de la expiración
         return now.getTime() >= expirationDate.getTime();
     };
 
