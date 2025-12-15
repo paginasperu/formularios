@@ -58,9 +58,6 @@ async function cargarYAnalizarContexto() {
         if (!resContexto.ok) throw new Error("Error cargando archivo de contexto (prompt.txt)");
 
         let systemInstruction = await resContexto.text();
-        
-        systemInstruction = systemInstruction
-            .replace(/\[nombre_empresa\]/g, CONFIG.NOMBRE_EMPRESA || 'Empresa');
             
         return systemInstruction;
 
@@ -122,15 +119,12 @@ function setupAccessGate() {
             const jsonText = text.replace(/.*google.visualization.Query.setResponse\((.*)\);/s, '$1');
             const data = JSON.parse(jsonText);
 
-            // CORRECCIÓN: Protege la lectura de la Fila 2 (índice 1).
             const dataRows = data.table.rows;
             const row = dataRows.length > 1 ? dataRows[1].c : (dataRows[0] ? dataRows[0].c : []);
             
-            // 1. CLAVE DE ACCESO
             const rawAccessValue = row[0] && row[0].v !== null ? row[0].v : "";
             sheetAccessKey = String(rawAccessValue).trim().toLowerCase(); 
             
-            // 2. EXTRACCIÓN DE FECHA
             let rawExpiration = row[1];
             if (rawExpiration && rawExpiration.f) {
                 sheetExpirationDate = rawExpiration.f; 
@@ -158,7 +152,6 @@ function setupAccessGate() {
         let dateString = sheetExpirationDate;
         let expirationDate;
         
-        // Lógica de corrección para formato DD-MM-YYYY HH:mm:ss
         const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}:\d{2}:\d{2})$/);
         
         if (match) {
@@ -197,14 +190,12 @@ function setupAccessGate() {
         
         const hasExpired = isKeyExpired();
 
-        // 1. Clave expirada
         if (realKey !== "" && hasExpired) {
             keyError.classList.remove('hidden');
             keyError.innerText = "La clave de acceso ha caducado. Contacta al administrador.";
             return; 
         }
         
-        // 2. Clave vacía en el Sheet
         if (realKey === "") {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
@@ -213,7 +204,6 @@ function setupAccessGate() {
             return;
         }
 
-        // 3. Validación ESTRICTA
         if (input === realKey) {
             keyError.classList.add('hidden');
             accessGate.classList.add('hidden');
@@ -245,9 +235,8 @@ async function cargarIA() {
     document.getElementById('bot-welcome-text').innerText = CONFIG.SALUDO_INICIAL || "Hola.";
     document.getElementById('status-text').innerText = "En línea 🟢";
     
-    // *** CORRECCIÓN DE NOMBRES DE VARIABLES ***
-    userInput.setAttribute('maxlength', CONFIG.MAX_LENGTH_INPUT); // Antes decía MAX_LENGTH
-    userInput.setAttribute('placeholder', CONFIG.PLACEHOLDER_INPUT); // Antes decía PLACEHOLDER
+    userInput.setAttribute('maxlength', CONFIG.MAX_LENGTH_INPUT); 
+    userInput.setAttribute('placeholder', CONFIG.PLACEHOLDER_INPUT); 
     
     toggleInput(true);
 
@@ -293,14 +282,13 @@ async function procesarMensaje() {
 
     if (!textoUsuario) return;
     
-    // *** CORRECCIÓN DE NOMBRES DE VARIABLES ***
-    if (textoUsuario.length < CONFIG.MIN_LENGTH_INPUT || textoUsuario.length > CONFIG.MAX_LENGTH_INPUT) {
+    if (textoUsuario.length < CONFIG.MIN_INPUT_LENGTH || textoUsuario.length > CONFIG.MAX_LENGTH_INPUT) {
         userInput.value = '';
         return;
     }
 
     const limit = checkRateLimit();
-    if (limit.limitReached) {
+    if (limit.reached) {
         agregarBurbuja(`⚠️ Demasiadas consultas. Espera ${limit.retryAfter}s.`, 'bot');
         userInput.value = '';
         return;
@@ -320,7 +308,7 @@ async function procesarMensaje() {
         
         conversationHistory.push({ role: "assistant", content: respuesta });
 
-        const whatsappCheck = `[whatsapp_link]`;
+        const whatsappCheck = `[whatsapp]`; 
         let htmlFinal = "";
 
         if (respuesta.includes(whatsappCheck)) {
