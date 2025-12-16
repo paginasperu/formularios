@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
-// --- Constantes Fijas del Sistema ---
+// --- Respuestas de Prueba Fijas ---
 const MOCK_RESPONSES = [
     "¡Hola! Esta es una respuesta simulada para mostrarte cómo luce el chat. 😊",
     "Entiendo perfectamente tu consulta, pero recuerda que ahora estoy en modo de prueba.",
@@ -14,7 +14,7 @@ let systemInstruction = "", conversationHistory = [], messageCount = 0, requestT
 const userInput = document.getElementById('userInput'), sendBtn = document.getElementById('sendBtn'), chatContainer = document.getElementById('chat-container');
 const feedbackDemoText = document.getElementById('feedback-demo-text'), WA_LINK = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}`;
 
-// --- Inicialización ---
+// --- Inicio Directo ---
 window.onload = () => {
     aplicarConfiguracionGlobal();
     cargarIA();
@@ -46,19 +46,21 @@ async function cargarIA() {
         updateDemoFeedback(0);
         sendBtn.onclick = procesarMensaje;
         userInput.onkeydown = (e) => { if (e.key === 'Enter') procesarMensaje(); };
-    } catch (e) { console.error("Error inicializando el sistema."); }
+    } catch (e) { console.error("Error al inicializar"); }
 }
 
-// --- Lógica Dual ---
+// --- Procesamiento de Mensajes ---
 async function procesarMensaje() {
     const text = userInput.value.trim();
     if (messageCount >= CONFIG.MAX_DEMO_MESSAGES || text.length < CONFIG.MIN_LENGTH_INPUT) return;
 
-    // Rate Limit
-    const now = Date.now(), windowMs = CONFIG.RATE_LIMIT_WINDOW_SECONDS * 1000;
-    requestTimestamps = requestTimestamps.filter(t => t > now - windowMs);
-    if (requestTimestamps.length >= CONFIG.RATE_LIMIT_MAX_REQUESTS) return;
-    requestTimestamps.push(now);
+    // Rate Limit (Solo aplica si no es modo demo)
+    if (!CONFIG.DEMO_MODE) {
+        const now = Date.now(), windowMs = CONFIG.RATE_LIMIT_WINDOW_SECONDS * 1000;
+        requestTimestamps = requestTimestamps.filter(t => t > now - windowMs);
+        if (requestTimestamps.length >= CONFIG.RATE_LIMIT_MAX_REQUESTS) return;
+        requestTimestamps.push(now);
+    }
 
     agregarBurbuja(text, 'user');
     conversationHistory.push({ role: "user", content: text });
@@ -68,7 +70,7 @@ async function procesarMensaje() {
     try {
         let respuesta;
         if (CONFIG.DEMO_MODE) {
-            await new Promise(r => setTimeout(r, 1200)); // Simulación de carga
+            await new Promise(r => setTimeout(r, 1000)); // Retraso para naturalidad
             respuesta = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
         } else {
             respuesta = await llamarIA();
@@ -81,9 +83,7 @@ async function procesarMensaje() {
         updateDemoFeedback(messageCount);
     } catch (e) {
         document.getElementById(loadingId)?.remove();
-        if (messageCount < CONFIG.MAX_DEMO_MESSAGES) {
-            agregarBurbuja("¡Ups! Hubo un problema de conexión.", 'bot');
-        }
+        agregarBurbuja("¡Ups! Hubo un problema al procesar tu consulta.", 'bot');
     } finally {
         const canContinue = messageCount < CONFIG.MAX_DEMO_MESSAGES;
         toggleInput(canContinue);
@@ -106,15 +106,15 @@ async function llamarIA() {
     return data.choices[0].message.content;
 }
 
-// --- UI Auxiliares ---
+// --- Interfaz ---
 function updateDemoFeedback(count) {
-    if (!CONFIG.SHOW_REMAINING_MESSAGES) return;
+    if (!CONFIG.SHOW_REMAINING_MESSAGES || !feedbackDemoText) return;
     const remaining = CONFIG.MAX_DEMO_MESSAGES - count;
     if (remaining <= 0) {
-        feedbackDemoText.innerText = `🛑 Has alcanzado el límite de mensajes.`;
+        feedbackDemoText.innerText = `🛑 Límite alcanzado. Contáctanos al WhatsApp.`;
         feedbackDemoText.style.color = "red";
     } else if (remaining <= CONFIG.WARNING_THRESHOLD) {
-        feedbackDemoText.innerText = `⚠️ Te queda(n) ${remaining} mensaje(s) de prueba.`;
+        feedbackDemoText.innerText = `⚠️ Te quedan ${remaining} mensaje(s).`;
         feedbackDemoText.style.color = CONFIG.COLOR_PRIMARIO;
     }
 }
