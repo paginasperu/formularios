@@ -6,20 +6,22 @@ let systemInstruction = "", conversationHistory = [], messageCount = 0, requestT
 const userInput = document.getElementById('userInput'), sendBtn = document.getElementById('sendBtn'), chatContainer = document.getElementById('chat-container');
 const chatInterface = document.getElementById('chat-interface'), feedbackDemoText = document.getElementById('feedback-demo-text'), WA_LINK = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}`;
 
-// --- Interfaz y Scroll ---
+// --- Gestión de Interfaz (Adaptación de Alertas) ---
 function handleScroll() {
     const observer = new MutationObserver(() => { observer.disconnect(); chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }); });
     observer.observe(chatContainer, { childList: true });
 }
 
 function updateDemoFeedback(count) {
-    if (!CONFIG.SHOW_REMAINING_MESSAGES) return;
+    if (!CONFIG.SHOW_REMAINING_MESSAGES || !feedbackDemoText) return;
     const remaining = CONFIG.MAX_DEMO_MESSAGES - count;
+
     if (remaining <= 0) {
-        feedbackDemoText.innerText = `🛑 Límite de ${CONFIG.MAX_DEMO_MESSAGES} mensajes alcanzado.`;
+        feedbackDemoText.innerText = `🛑 Límite de ${CONFIG.MAX_DEMO_MESSAGES} mensajes alcanzado. Contáctanos para continuar.`;
         feedbackDemoText.style.color = 'red';
+        feedbackDemoText.style.fontWeight = 'bold';
     } else if (remaining <= CONFIG.WARNING_THRESHOLD) {
-        feedbackDemoText.innerText = `⚠️ Te quedan ${remaining} mensaje(s).`;
+        feedbackDemoText.innerText = `⚠️ Atención: Te quedan ${remaining} mensaje(s) de demostración.`;
         feedbackDemoText.style.color = CONFIG.COLOR_PRIMARIO;
     }
 }
@@ -30,9 +32,7 @@ function aplicarConfiguracionGlobal() {
     const headerIcon = document.getElementById('header-icon-initials');
     if (CONFIG.LOGO_URL && headerIcon) {
         headerIcon.innerHTML = `<img src="${CONFIG.LOGO_URL}" alt="${CONFIG.NOMBRE_EMPRESA}" class="w-full h-full object-contain rounded-full">`;
-    } else if (headerIcon) {
-        headerIcon.innerText = CONFIG.ICONO_HEADER;
-    }
+    } else if (headerIcon) { headerIcon.innerText = CONFIG.ICONO_HEADER; }
     document.getElementById('header-title').innerText = CONFIG.NOMBRE_EMPRESA;
     
     const linkIcon = document.querySelector("link[rel*='icon']");
@@ -41,64 +41,48 @@ function aplicarConfiguracionGlobal() {
     }
 }
 
-// --- Seguridad y Acceso (Protección en el Login) ---
+// --- Seguridad y Acceso ---
 function setupAccessGate() {
     const keySubmit = document.getElementById('keySubmit'), keyInput = document.getElementById('keyInput'), keyError = document.getElementById('keyError');
     keySubmit.style.backgroundColor = CONFIG.COLOR_PRIMARIO;
-    
-    // BLOQUEO 1: Evitar que el navegador reconozca la clave inicial
     keyInput.setAttribute('autocomplete', 'one-time-code'); 
     keyInput.setAttribute('name', 'access_token_' + Math.random().toString(36).substring(7));
 
     const validarAcceso = async () => {
         const inputKey = keyInput.value.trim(); 
         if (!inputKey) { keyError.innerText = "Ingresa una clave."; keyError.classList.remove('hidden'); return; }
-
         try {
             const res = await fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json`);
-            const text = await res.text();
-            const json = JSON.parse(text.replace(/.*google.visualization.Query.setResponse\((.*)\);/s, '$1'));
+            const text = await res.text(), json = JSON.parse(text.replace(/.*google.visualization.Query.setResponse\((.*)\);/s, '$1'));
             const row = json.table.rows[1]?.c || json.table.rows[0]?.c || [];
-            
-            const realKey = String(row[0]?.v || "").trim();
-            const expRaw = row[1]?.f || row[1]?.v || "";
-
+            const realKey = String(row[0]?.v || "").trim(), expRaw = row[1]?.f || row[1]?.v || "";
             if (expRaw) {
                 const p = expRaw.match(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/);
                 if (p && (new Date() > new Date(p[3], p[2]-1, p[1], p[4], p[5], p[6]))) {
                     keyError.innerText = "Clave caducada."; keyError.classList.remove('hidden'); return;
                 }
             }
-
             if (inputKey === realKey) {
                 document.getElementById('access-gate').classList.add('hidden');
-                chatInterface.classList.remove('hidden');
-                cargarIA();
-            } else {
-                keyError.innerText = "Clave incorrecta."; keyError.classList.remove('hidden');
-            }
+                chatInterface.classList.remove('hidden'); cargarIA();
+            } else { keyError.innerText = "Clave incorrecta."; keyError.classList.remove('hidden'); }
         } catch (e) { keyError.innerText = "Error de conexión."; keyError.classList.remove('hidden'); }
     };
-
     keySubmit.onclick = validarAcceso;
     keyInput.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); validarAcceso(); } };
 }
 
-// --- Chat e IA (Protección en el Chat) ---
+// --- Lógica de IA ---
 async function cargarIA() {
     try {
         const res = await fetch('./prompt.txt');
         systemInstruction = res.ok ? await res.text() : "";
         document.getElementById('bot-welcome-text').innerText = CONFIG.SALUDO_INICIAL;
-        
-        // BLOQUEO 2: Cambiar el nombre del campo de chat para que no parezca un formulario de login
         userInput.setAttribute('autocomplete', 'off');
-        userInput.setAttribute('name', 'chat_query_' + Date.now()); // Nombre dinámico
+        userInput.setAttribute('name', 'chat_query_' + Date.now());
         userInput.placeholder = CONFIG.PLACEHOLDER_INPUT;
         userInput.maxLength = CONFIG.MAX_LENGTH_INPUT;
-        
-        toggleInput(true);
-        updateDemoFeedback(0);
+        toggleInput(true); updateDemoFeedback(0);
         sendBtn.onclick = procesarMensaje;
         userInput.onkeydown = (e) => { if (e.key === 'Enter') procesarMensaje(); };
     } catch (e) { console.error("Error inicializando IA"); }
@@ -106,7 +90,16 @@ async function cargarIA() {
 
 async function procesarMensaje() {
     const text = userInput.value.trim();
-    if (messageCount >= CONFIG.MAX_DEMO_MESSAGES || text.length < CONFIG.MIN_LENGTH_INPUT) return;
+    
+    // BLOQUEO BASE (Muro): Si ya llegó al límite, no procesamos nada
+    if (messageCount >= CONFIG.MAX_DEMO_MESSAGES) {
+        updateDemoFeedback(messageCount);
+        toggleInput(false);
+        userInput.value = '';
+        return;
+    }
+
+    if (text.length < CONFIG.MIN_LENGTH_INPUT) return;
 
     // Rate Limit
     const now = Date.now(), windowMs = CONFIG.RATE_LIMIT_WINDOW_SECONDS * 1000;
@@ -138,6 +131,8 @@ async function procesarMensaje() {
         clearTimeout(longWaitTimeoutId);
         const loadEl = document.getElementById(loadingId);
         if (loadEl) loadEl.remove();
+        
+        // FILTRADO DE ERROR: Solo mostramos error de red si es un problema real y no de límite
         if (messageCount < CONFIG.MAX_DEMO_MESSAGES) {
             agregarBurbuja(marked.parse("¡Ups! Hubo un problema de conexión."), 'bot');
         }
@@ -151,7 +146,6 @@ async function procesarMensaje() {
 async function llamarIA(loadingId) {
     let delay = CONFIG.RETRY_DELAY_MS;
     const messages = [{ role: "system", content: systemInstruction }, ...conversationHistory.slice(-CONFIG.MAX_HISTORIAL_MESSAGES)];
-
     for (let i = 0; i <= CONFIG.RETRY_LIMIT; i++) {
         try {
             const ctrl = new AbortController(), tId = setTimeout(() => ctrl.abort(), CONFIG.TIMEOUT_MS);
@@ -186,25 +180,17 @@ function toggleInput(s) { userInput.disabled = !s; sendBtn.disabled = !s; }
 
 function agregarBurbuja(html, tipo) {
     const div = document.createElement('div');
-    if (tipo === 'user') {
-        div.className = "p-3 max-w-[85%] text-sm text-white rounded-2xl rounded-tr-none self-end ml-auto shadow-sm";
-        div.style.backgroundColor = CONFIG.COLOR_PRIMARIO;
-        div.textContent = html;
-    } else {
-        div.className = "p-3 max-w-[85%] text-sm bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start bot-bubble shadow-sm";
-        div.innerHTML = html;
-    }
-    chatContainer.appendChild(div);
-    handleScroll();
+    div.className = tipo === 'user' ? "p-3 max-w-[85%] text-sm text-white rounded-2xl rounded-tr-none self-end ml-auto shadow-sm" : "p-3 max-w-[85%] text-sm bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start bot-bubble shadow-sm";
+    if (tipo === 'user') { div.style.backgroundColor = CONFIG.COLOR_PRIMARIO; div.textContent = html; }
+    else { div.innerHTML = html; }
+    chatContainer.appendChild(div); handleScroll();
 }
 
 function mostrarLoading() {
     const id = 'load-' + Date.now(), div = document.createElement('div');
-    div.id = id;
-    div.className = "p-3 max-w-[85%] bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start flex gap-1 shadow-sm";
+    div.id = id; div.className = "p-3 max-w-[85%] bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start flex gap-1 shadow-sm";
     div.innerHTML = `<div class="w-2 h-2 rounded-full typing-dot"></div><div class="w-2 h-2 rounded-full typing-dot" style="animation-delay:0.2s"></div><div class="w-2 h-2 rounded-full typing-dot" style="animation-delay:0.4s"></div>`;
-    chatContainer.appendChild(div);
-    handleScroll();
+    chatContainer.appendChild(div); handleScroll();
     longWaitTimeoutId = setTimeout(() => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = `<span style="color:#d97706; font-weight: 500;">⚠️ Alta demanda, procesando...</span>`;
