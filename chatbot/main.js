@@ -2,11 +2,11 @@ import { CONFIG } from './config.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
 const MOCK_RESPONSES = [
-    "¡Hola! Soy Fedeliza, tu asesora en Frankos Chicken. 😊",
-    "¿Deseas conocer nuestros combos personales o familiares?",
-    "Nuestros pollos a la brasa son los favoritos de la ciudad.",
-    "Recuerda que puedes pedir por WhatsApp para una atención más rápida.",
-    "Has llegado al límite de la demo. ¡Contáctanos para activar el bot real!"
+    "¡Hola! Este es una respuesta simulada de prueba. 😊",
+    "Entiendo perfectamente tu consulta, estamos en modo demo.",
+    "El diseño es responsivo y se adapta a móviles y PC.",
+    "Puedes personalizar este flujo según las necesidades del negocio.",
+    "Has llegado al límite de mensajes de la demostración."
 ];
 
 let systemInstruction = "", messageCount = 0;
@@ -22,15 +22,22 @@ window.onload = () => {
 };
 
 function aplicarConfiguracionGlobal() {
+    // 1. Inyectamos el color de la configuración en el CSS dinámico
+    document.documentElement.style.setProperty('--chat-color', CONFIG.COLOR_PRIMARIO);
+    
+    // 2. Textos e Iconos
     document.title = CONFIG.NOMBRE_EMPRESA;
     const headerTitle = document.getElementById('header-title');
     if (headerTitle) headerTitle.innerText = CONFIG.NOMBRE_EMPRESA;
+
     const headerIcon = document.getElementById('header-icon-initials');
     if (CONFIG.LOGO_URL && headerIcon) {
-        headerIcon.innerHTML = `<img src="${CONFIG.LOGO_URL}" class="w-full h-full object-cover rounded-full">`;
+        headerIcon.innerHTML = `<img src="${CONFIG.LOGO_URL}" class="w-full h-full object-cover">`;
     } else if (headerIcon) {
         headerIcon.innerText = CONFIG.ICONO_HEADER;
     }
+
+    userInput.placeholder = CONFIG.PLACEHOLDER_INPUT;
 }
 
 function scrollToBottom() {
@@ -39,13 +46,12 @@ function scrollToBottom() {
 
 async function cargarIA() {
     try {
-        // Carga de prompt usando la versión del config
         const res = await fetch(`./prompt.txt?v=${CONFIG.VERSION}`);
         systemInstruction = res.ok ? await res.text() : "";
         document.getElementById('bot-welcome-text').innerText = CONFIG.SALUDO_INICIAL;
         toggleInput(true);
         scrollToBottom();
-    } catch (e) { console.error("Error cargando IA", e); }
+    } catch (e) { console.error("Error al cargar la IA", e); }
 }
 
 async function enviarMensaje() {
@@ -53,7 +59,7 @@ async function enviarMensaje() {
     if (!text) return;
 
     if (messageCount >= CONFIG.MAX_DEMO_MESSAGES) {
-        agregarBurbuja(`Límite alcanzado. <a href="${WA_LINK}" class="underline font-bold">WhatsApp aquí</a>`, 'bot');
+        agregarBurbuja(`Límite alcanzado. <a href="${WA_LINK}" class="underline font-bold" style="color: var(--chat-color)">WhatsApp aquí</a>`, 'bot');
         userInput.value = "";
         return;
     }
@@ -72,7 +78,7 @@ async function enviarMensaje() {
         const reply = MOCK_RESPONSES[Math.min(messageCount - 1, MOCK_RESPONSES.length - 1)];
         agregarBurbuja(marked.parse(reply), 'bot');
         scrollToBottom();
-    }, 1000);
+    }, 1200);
 }
 
 sendBtn.onclick = enviarMensaje;
@@ -86,7 +92,7 @@ function agregarBurbuja(html, tipo) {
         : "p-3 max-w-[85%] text-sm bg-white border border-gray-200 rounded-2xl rounded-tl-none self-start bot-bubble shadow-sm";
     
     if (tipo === 'user') { 
-        div.style.backgroundColor = CONFIG.COLOR_PRIMARIO; 
+        div.style.backgroundColor = 'var(--chat-color)'; 
         div.textContent = html; 
     } else { 
         div.innerHTML = html; 
@@ -108,5 +114,6 @@ function toggleInput(s) { userInput.disabled = !s; sendBtn.disabled = !s; }
 
 function actualizarContadorDemo() {
     const remaining = CONFIG.MAX_DEMO_MESSAGES - messageCount;
-    feedbackDemoText.innerText = remaining > 0 ? `DEMO: ${remaining} MENSAJES RESTANTES` : "LÍMITE ALCANZADO";
+    feedbackDemoText.innerText = remaining > 0 ? `MENSAJES RESTANTES: ${remaining}` : "LÍMITE ALCANZADO";
+    feedbackDemoText.style.color = remaining > 0 ? 'var(--chat-color)' : '#ef4444';
 }
