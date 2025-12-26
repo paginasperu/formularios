@@ -8,6 +8,7 @@
   :root { --radius: 12px; --bg: #fafafa; --max-width: 1200px; --accent: #000; }
   body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; scroll-behavior: smooth; }
 
+  /* CABECERA */
   header { 
     background: #fff; border-bottom: 1px solid #ddd; 
     position: sticky; top: 0; z-index: 1000; width: 100%; 
@@ -21,7 +22,7 @@
   .brand .full-name { font-size: 1.2rem; letter-spacing: 1px; }
   .brand .short-name { 
     display: none; background: var(--accent); color: #fff; 
-    width: 38px; height: 38px; border-radius: 8px; font-size: 1.1rem;
+    width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem;
     align-items: center; justify-content: center;
   }
 
@@ -44,27 +45,32 @@
     .hamburger-icon { width: 40px; height: 40px; background: #f2f2f2; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 20px; }
   }
 
+  /* GRILLA */
   .container { max-width: var(--max-width); margin: 25px auto; padding: 0 16px; box-sizing: border-box; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
   
-  .card { background: #fff; border: 1px solid #eee; border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; position: relative; }
+  .card { background: #fff; border: 1px solid #eee; border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; position: relative; box-sizing: border-box; }
   .thumb { width: 100%; aspect-ratio: 1/1; background: #f0f0f0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; }
   
-  .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 40px; }
+  .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 45px; }
   .description { font-size: 13.5px; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 15px; }
 
+  /* PRECIOS UNIFICADOS */
   .price-container { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: auto; display: flex; align-items: center; gap: 8px; }
-  .old-price { font-size: 1.1rem; color: #999; text-decoration: line-through; font-weight: 400; }
+  .old-price { font-size: 1.2rem; color: #999; text-decoration: line-through; font-weight: 400; }
   .current-price { font-weight: 700; font-size: 1.2rem; color: #000; }
 
-  .btn-plus {
+  /* BOTÓN RECTANGULAR SUTIL CON "+" */
+  .btn-action {
     position: absolute; bottom: 12px; right: 18px;
-    width: 36px; height: 36px; background: #f9f9f9; border: 1px solid #eee;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    text-decoration: none; color: #444; font-size: 22px; font-weight: 400; transition: 0.2s;
+    height: 32px; min-width: 32px; padding: 0 10px;
+    background: #f9f9f9; border: 1px solid #eee;
+    border-radius: 8px; text-decoration: none; color: #444; 
+    font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
   }
-  .btn-plus:hover { background: #222; color: #fff; border-color: #222; }
+  .btn-action:hover { background: #222; color: #fff; border-color: #222; }
 
   .hidden { display: none !important; }
 </style>
@@ -99,10 +105,9 @@
 
   const limpiarTexto = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
   
-  // FUNCIÓN PARA FORMATEAR A 00.00
   const formatoPrecio = (num) => {
     if (!num || num.trim() === "") return "";
-    let n = parseFloat(num.trim().replace(',', '.'));
+    let n = parseFloat(num.toString().trim().replace(',', '.'));
     return isNaN(n) ? currency + num : currency + n.toFixed(2);
   };
 
@@ -147,7 +152,7 @@
                 : `<span class="current-price">${formatoPrecio(precioRaw)}</span>`
               }
             </div>
-            <a href="https://wa.me/${phone}?text=${wsMsg}" class="btn-plus" target="_blank">+</a>
+            <a href="https://wa.me/${phone}?text=${wsMsg}" class="btn-action" target="_blank">+</a>
           </div>
         `;
       }).join('');
