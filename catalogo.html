@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Catálogo Luxe | Pedidos Directos</title>
+<title>Catálogo Luxe | Consultas</title>
 <style>
   :root { --radius: 12px; --bg: #fafafa; --max-width: 1200px; --accent: #000; }
   body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; scroll-behavior: smooth; }
@@ -54,19 +54,17 @@
   .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 10px; }
   .description { font-size: 13.5px; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 15px; }
 
-  /* PRECIOS EN UNA SOLA LÍNEA */
   .price-container { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: auto; display: flex; align-items: center; gap: 10px; }
   .old-price { font-size: 1.1rem; color: #999; text-decoration: line-through; font-weight: 400; }
   .current-price { font-weight: 700; font-size: 1.2rem; color: #000; }
 
-  /* BOTÓN PEDIR */
-  .btn-pedir {
+  .btn-info {
     position: absolute; bottom: 12px; right: 18px;
-    padding: 6px 14px; background: #f9f9f9; border: 1px solid #eee;
+    padding: 6px 12px; background: #f9f9f9; border: 1px solid #eee;
     border-radius: 8px; text-decoration: none; color: #444; 
-    font-size: 13px; font-weight: 600; transition: 0.2s;
+    font-size: 12.5px; font-weight: 600; transition: 0.2s;
   }
-  .btn-pedir:hover { background: #222; color: #fff; border-color: #222; }
+  .btn-info:hover { background: #222; color: #fff; border-color: #222; }
 
   .hidden { display: none !important; }
 </style>
@@ -91,13 +89,16 @@
 </main>
 
 <script>
+  // CONFIGURACIÓN
   const sheetUrl = 'https://docs.google.com/spreadsheets/d/1SbZbDnDjBplG8vKc6Y75ZTn5aqakFLAv7xxM4TQXKP8/edit?gid=0#gid=0';
-  const phone = "51900000000"; // Tu número aquí
+  const phone = "51900000000"; // Tu WhatsApp sin el "+"
+  const currency = "S/ "; // Símbolo de moneda que se agregará automáticamente
 
   const idMatch = sheetUrl.match(/\/d\/(.+?)\//);
   const dataUrl = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/export?format=csv`;
 
   const limpiarTexto = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
+  const formatoPrecio = (num) => num && num.trim() !== "" ? currency + num.trim() : "";
 
   async function init() {
     try {
@@ -119,14 +120,14 @@
       document.getElementById('products').innerHTML = rows.slice(1).map(col => {
         const nombre = col[idx.nombre] || '';
         const categoria = col[idx.categoria] || '';
-        const precio = col[idx.precio] || '';
-        const oferta = col[idx.oferta] || '';
+        const precioRaw = col[idx.precio] || '';
+        const ofertaRaw = col[idx.oferta] || '';
         const desc = col[idx.descripcion] || '';
         const img = col[idx.imagen] || '';
 
         if(categoria) categories.add(categoria.trim());
 
-        const hasOferta = oferta && oferta.trim() !== "";
+        const hasOferta = ofertaRaw && ofertaRaw.trim() !== "";
         const wsMsg = encodeURIComponent(`Hola, deseo más información sobre ${nombre}`);
 
         return `
@@ -135,9 +136,12 @@
             <div class="title">${nombre}</div>
             <div class="description">${desc}</div>
             <div class="price-container">
-              ${hasOferta ? `<span class="old-price">${precio}</span> <span class="current-price">${oferta}</span>` : `<span class="current-price">${precio}</span>`}
+              ${hasOferta 
+                ? `<span class="old-price">${formatoPrecio(precioRaw)}</span> <span class="current-price">${formatoPrecio(ofertaRaw)}</span>` 
+                : `<span class="current-price">${formatoPrecio(precioRaw)}</span>`
+              }
             </div>
-            <a href="https://wa.me/${phone}?text=${wsMsg}" class="btn-pedir" target="_blank">Pedir</a>
+            <a href="https://wa.me/${phone}?text=${wsMsg}" class="btn-info" target="_blank">Información</a>
           </div>
         `;
       }).join('');
@@ -150,7 +154,7 @@
 
       document.getElementById('status').style.display = 'none';
       setupFilters();
-    } catch (e) { document.getElementById('status').innerText = "⚠️ Error al cargar."; }
+    } catch (e) { document.getElementById('status').innerText = "⚠️ Error al cargar datos."; }
   }
 
   function parseCSV(text) {
