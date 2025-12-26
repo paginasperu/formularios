@@ -6,9 +6,9 @@
 <title>Catálogo Luxe | Final</title>
 <style>
   :root { --radius: 12px; --bg: #fafafa; --max-width: 1200px; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; scroll-behavior: smooth; }
 
-  /* CABECERA ALINEADA */
+  /* CABECERA */
   header { 
     background: #fff; border-bottom: 1px solid #ddd; 
     position: sticky; top: 0; z-index: 1000; width: 100%; 
@@ -16,6 +16,7 @@
   .header-content {
     max-width: var(--max-width); margin: 0 auto; padding: 12px 16px;
     display: flex; align-items: center; gap: 12px; box-sizing: border-box;
+    position: relative;
   }
 
   .search-wrapper { flex-grow: 1; }
@@ -25,7 +26,7 @@
   }
   .search-input:focus { background: #fff; border-color: #ccc; }
 
-  /* SELECTORES DE CATEGORÍAS */
+  /* SELECTORES */
   .cat-select { 
     padding: 11px; border: 1px solid #eee; border-radius: 10px; 
     background: #f2f2f2; font-size: 14px; cursor: pointer; outline: none;
@@ -34,29 +35,27 @@
   .desktop-cat { width: 200px; display: block; }
   .mobile-menu-wrapper { display: none; position: relative; }
 
-  /* VISTA MÓVIL */
   @media(max-width: 768px) {
     .desktop-cat { display: none; }
     .mobile-menu-wrapper { display: block; }
     
-    /* El select nativo cubre el icono de hamburguesa */
     .mobile-cat-native {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0; cursor: pointer; appearance: none; z-index: 2;
+      opacity: 0; cursor: pointer; appearance: none; z-index: 10;
     }
     .hamburger-icon {
       width: 48px; height: 48px; background: #f2f2f2; border-radius: 10px;
       display: flex; align-items: center; justify-content: center; color: #666; font-size: 22px;
-      border: 1px solid #eee;
+      border: 1px solid #ddd;
     }
   }
 
-  /* GRILLA DE PRODUCTOS CON ESPACIADO REAL */
+  /* CONTENEDOR DE PRODUCTOS */
   .container { max-width: var(--max-width); margin: 30px auto; padding: 0 16px; box-sizing: border-box; }
   .grid { 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
-    gap: 30px; /* Espacio generoso entre fichas */
+    gap: 30px; 
     align-items: stretch; 
   }
   
@@ -65,22 +64,18 @@
     display: flex; flex-direction: column; height: 100%; transition: 0.2s; box-sizing: border-box;
   }
   
-  /* CONTENEDOR DE IMAGEN (Icono provisional) */
   .thumb { 
     width: 100%; aspect-ratio: 1/1; background: #f0f0f0; border-radius: 10px; margin-bottom: 18px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
   }
-  .thumb::after { content: '👜'; font-size: 2.5rem; opacity: 0.2; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
   
   .title { font-weight: 700; font-size: 17px; margin-bottom: 12px; color: #000; }
-  
-  /* DESCRIPCIÓN CON ALTURA VARIABLE DINÁMICA */
   .description { 
     font-size: 14px; color: #555; line-height: 1.6; 
     white-space: pre-wrap; flex-grow: 1; margin-bottom: 20px; 
   }
   
-  /* PRECIO SIEMPRE AL FONDO */
   .price { 
     font-weight: 700; font-size: 1.3rem; color: #000;
     border-top: 1px solid #f2f2f2; padding-top: 15px; margin-top: auto; 
@@ -92,10 +87,10 @@
 </head>
 <body>
 
-<header>
+<header id="top">
   <div class="header-content">
     <div class="search-wrapper">
-      <input type="text" class="search-input" id="mainSearch" placeholder="Buscar carteras por nombre o color..." />
+      <input type="text" class="search-input" id="mainSearch" placeholder="Buscar carteras por nombre o descripción..." />
     </div>
 
     <select class="cat-select desktop-cat" id="catDesktop">
@@ -117,7 +112,6 @@
 </main>
 
 <script>
-  // Enlace directo a tu Google Sheets (Compartido públicamente)
   const originalUrl = 'https://docs.google.com/spreadsheets/d/1SbZbDnDjBplG8vKc6Y75ZTn5aqakFLAv7xxM4TQXKP8/edit?gid=0#gid=0';
   
   const idMatch = originalUrl.match(/\/d\/(.+?)\//);
@@ -130,7 +124,6 @@
   const catMobile = document.getElementById('catMobile');
   const mainSearch = document.getElementById('mainSearch');
 
-  // Normalización para ignorar tildes y mayúsculas
   const limpiarTexto = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
   async function init() {
@@ -138,19 +131,21 @@
       const resp = await fetch(dataUrl);
       const csvText = await resp.text();
       const rows = parseCSV(csvText);
-      const productsData = rows.slice(1); // Saltamos la cabecera del Excel
+      const productsData = rows.slice(1);
       const categories = new Set();
 
       grid.innerHTML = productsData.map(col => {
         if (col.length < 4) return '';
-        const [nombre, categoria, precio, descripcion] = col.map(c => c.trim());
+        const [nombre, categoria, precio, descripcion, foto] = col.map(c => c.trim());
         if(categoria) categories.add(categoria);
 
         return `
           <div class="card" 
                data-category="${limpiarTexto(categoria)}" 
                data-fulltext="${limpiarTexto(nombre + ' ' + descripcion)}">
-            <div class="thumb"></div>
+            <div class="thumb">
+                <img src="${foto || 'https://via.placeholder.com/400?text=Sin+Foto'}" alt="${nombre}" loading="lazy">
+            </div>
             <div class="title">${nombre}</div>
             <div class="description">${descripcion}</div>
             <div class="price">${precio}</div>
@@ -158,7 +153,6 @@
         `;
       }).join('');
 
-      // Llenamos los selectores con las categorías reales del Sheets
       categories.forEach(cat => {
         const val = limpiarTexto(cat);
         catDesktop.add(new Option(cat, val));
@@ -168,11 +162,10 @@
       status.style.display = 'none';
       setupFilters();
     } catch (e) {
-      status.innerHTML = "⚠️ Error al conectar con Google Sheets. Asegúrate de que el archivo esté compartido para que cualquiera con el enlace pueda leer.";
+      status.innerHTML = "⚠️ Error al cargar los datos.";
     }
   }
 
-  // Procesa el CSV respetando comas dentro de textos entrecomillados
   function parseCSV(text) {
     const result = []; let row = []; let field = ''; let inQuotes = false;
     for (let i = 0; i < text.length; i++) {
@@ -195,9 +188,8 @@
   function setupFilters() {
     const items = [...document.querySelectorAll('.card')];
     
-    function run() {
+    function run(scrollToTop = false) {
       const q = limpiarTexto(mainSearch.value);
-      // Determinamos cuál selector está activo según el ancho de pantalla
       const cat = window.getComputedStyle(catDesktop).display !== 'none' ? catDesktop.value : catMobile.value;
 
       items.forEach(card => {
@@ -205,11 +197,15 @@
         const matchesCat = cat === 'todas' || card.dataset.category === cat;
         card.classList.toggle('hidden', !(matchesText && matchesCat));
       });
+
+      if (scrollToTop) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
-    mainSearch.oninput = run;
-    catDesktop.onchange = run;
-    catMobile.onchange = run;
+    mainSearch.oninput = () => run(false);
+    catDesktop.onchange = () => run(true);
+    catMobile.onchange = () => run(true);
   }
 
   init();
