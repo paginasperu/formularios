@@ -56,23 +56,24 @@
   .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 45px; }
   .description { font-size: 13.5px; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 15px; }
 
-  /* PRECIOS UNIFICADOS */
+  /* PRECIOS REDUCIDOS EN UNA LÍNEA */
   .price-container { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: auto; display: flex; align-items: center; gap: 8px; }
-  .old-price { font-size: 1.2rem; color: #999; text-decoration: line-through; font-weight: 400; }
-  .current-price { font-weight: 700; font-size: 1.2rem; color: #000; }
+  .old-price { font-size: 1rem; color: #999; text-decoration: line-through; font-weight: 400; }
+  .current-price { font-weight: 700; font-size: 1.1rem; color: #000; }
 
-  /* BOTÓN RECTANGULAR SUTIL CON "+" */
+  /* BOTÓN CUADRADO SUTIL */
   .btn-action {
     position: absolute; bottom: 12px; right: 18px;
-    height: 32px; min-width: 32px; padding: 0 10px;
+    width: 34px; height: 34px;
     background: #f9f9f9; border: 1px solid #eee;
     border-radius: 8px; text-decoration: none; color: #444; 
-    font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center;
-    transition: 0.2s;
+    font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; box-sizing: border-box;
   }
   .btn-action:hover { background: #222; color: #fff; border-color: #222; }
 
   .hidden { display: none !important; }
+  #status { text-align: center; padding: 50px; color: #999; }
 </style>
 </head>
 <body>
@@ -90,12 +91,11 @@
 </header>
 
 <main class="container">
-  <div id="status" style="text-align:center; padding:50px; color:#999;">Cargando catálogo...</div>
+  <div id="status">Cargando catálogo...</div>
   <div id="products" class="grid"></div>
 </main>
 
 <script>
-  // CONFIGURACIÓN
   const sheetUrl = 'https://docs.google.com/spreadsheets/d/1SbZbDnDjBplG8vKc6Y75ZTn5aqakFLAv7xxM4TQXKP8/edit?gid=0#gid=0';
   const phone = "51900000000"; 
   const currency = "S/ "; 
