@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Catálogo Luxe | Consultas</title>
+<title>Catálogo Luxe | Final Pro</title>
 <style>
   :root { --radius: 12px; --bg: #fafafa; --max-width: 1200px; --accent: #000; }
   body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; background: var(--bg); color:#222; scroll-behavior: smooth; }
@@ -51,20 +51,20 @@
   .thumb { width: 100%; aspect-ratio: 1/1; background: #f0f0f0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; }
   
-  .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 10px; }
+  .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; padding-right: 40px; }
   .description { font-size: 13.5px; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 15px; }
 
-  .price-container { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: auto; display: flex; align-items: center; gap: 10px; }
+  .price-container { border-top: 1px solid #f2f2f2; padding-top: 12px; margin-top: auto; display: flex; align-items: center; gap: 8px; }
   .old-price { font-size: 1.1rem; color: #999; text-decoration: line-through; font-weight: 400; }
   .current-price { font-weight: 700; font-size: 1.2rem; color: #000; }
 
-  .btn-info {
+  .btn-plus {
     position: absolute; bottom: 12px; right: 18px;
-    padding: 6px 12px; background: #f9f9f9; border: 1px solid #eee;
-    border-radius: 8px; text-decoration: none; color: #444; 
-    font-size: 12.5px; font-weight: 600; transition: 0.2s;
+    width: 36px; height: 36px; background: #f9f9f9; border: 1px solid #eee;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    text-decoration: none; color: #444; font-size: 22px; font-weight: 400; transition: 0.2s;
   }
-  .btn-info:hover { background: #222; color: #fff; border-color: #222; }
+  .btn-plus:hover { background: #222; color: #fff; border-color: #222; }
 
   .hidden { display: none !important; }
 </style>
@@ -91,14 +91,20 @@
 <script>
   // CONFIGURACIÓN
   const sheetUrl = 'https://docs.google.com/spreadsheets/d/1SbZbDnDjBplG8vKc6Y75ZTn5aqakFLAv7xxM4TQXKP8/edit?gid=0#gid=0';
-  const phone = "51950141414"; // Tu número sin el "+"
+  const phone = "51900000000"; 
   const currency = "S/ "; 
 
   const idMatch = sheetUrl.match(/\/d\/(.+?)\//);
   const dataUrl = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/export?format=csv`;
 
   const limpiarTexto = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
-  const formatoPrecio = (num) => num && num.trim() !== "" ? currency + num.trim() : "";
+  
+  // FUNCIÓN PARA FORMATEAR A 00.00
+  const formatoPrecio = (num) => {
+    if (!num || num.trim() === "") return "";
+    let n = parseFloat(num.trim().replace(',', '.'));
+    return isNaN(n) ? currency + num : currency + n.toFixed(2);
+  };
 
   async function init() {
     try {
@@ -128,7 +134,6 @@
         if(categoria) categories.add(categoria.trim());
 
         const hasOferta = ofertaRaw && ofertaRaw.trim() !== "";
-        // Mensaje con negritas (*) para WhatsApp
         const wsMsg = encodeURIComponent(`Hola, deseo más información sobre *${nombre}*`);
 
         return `
@@ -142,7 +147,7 @@
                 : `<span class="current-price">${formatoPrecio(precioRaw)}</span>`
               }
             </div>
-            <a href="https://wa.me/${phone}?text=${wsMsg}" class="btn-info" target="_blank">Información</a>
+            <a href="https://wa.me/${phone}?text=${wsMsg}" class="btn-plus" target="_blank">+</a>
           </div>
         `;
       }).join('');
