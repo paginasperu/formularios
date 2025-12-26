@@ -3,168 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power Tool Catalog Gen</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+    <title>Generador de Catálogo A4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        .font-oswald { font-family: 'Oswald', sans-serif; }
-        .font-roboto { font-family: 'Roboto', sans-serif; }
-        /* Simulación de página A4 para la previsualización */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+
+        /* Panel de Control (No se imprime) */
+        .controls {
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px; margin: 0 auto 30px auto;
+            display: flex; gap: 15px; align-items: center;
+        }
+
+        /* Estilos del "Papel" A4 */
         #catalog-page {
+            background: white;
             width: 210mm;
             min-height: 297mm;
-            background: white;
             margin: 0 auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
-        .skew-box { transform: skew(-10deg); }
-        .unskew { transform: skew(10deg); }
+
+        .header { text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px; }
+
+        /* Grid de Productos */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .product-card {
+            border: 1px solid #eee; padding: 15px; border-radius: 5px;
+            display: flex; flex-direction: column; gap: 5px;
+        }
+
+        .product-name { font-weight: bold; color: var(--primary-color); font-size: 1.1em; }
+        .product-price { color: var(--accent-color); font-weight: bold; }
+        .product-desc { font-size: 0.9em; color: #666; }
+
+        /* Botones */
+        button {
+            padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px;
+            background: var(--accent-color); color: white; font-weight: bold;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-pdf { background: #e74c3c; }
+
+        @media print {
+            .controls { display: none; }
+            body { background: white; padding: 0; }
+            #catalog-page { box-shadow: none; margin: 0; }
+        }
     </style>
 </head>
-<body class="bg-gray-800 font-roboto">
+<body>
 
-<div id="app" class="flex flex-col lg:flex-row min-h-screen">
-    
-    <div class="w-full lg:w-96 bg-gray-900 text-white p-6 shadow-2xl z-10">
-        <h2 class="text-yellow-500 font-oswald text-2xl mb-6">CONFIGURACIÓN PRO</h2>
-        
-        <div class="space-y-6">
-            <div class="bg-gray-800 p-4 rounded-lg">
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-2">1. Base de Datos (CSV)</label>
-                <input type="file" @change="handleFileUpload" class="text-sm block w-full file:bg-yellow-500 file:border-none file:px-4 file:py-1 file:rounded file:font-bold cursor-pointer">
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Título de Oferta</label>
-                <input v-model="config.promoTitle" type="text" class="w-full bg-gray-700 p-2 rounded border border-gray-600 focus:border-yellow-500 outline-none">
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Descuento %</label>
-                    <input v-model="config.discount" type="text" class="w-full bg-gray-700 p-2 rounded border border-gray-600 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Color</label>
-                    <input v-model="config.accentColor" type="color" class="w-full h-10 rounded bg-gray-700 border-none">
-                </div>
-            </div>
-
-            <button @click="downloadPDF" :disabled="products.length === 0" 
-                    class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 rounded-none skew-box transition-all uppercase">
-                <span class="unskew block">Generar PDF Profesional</span>
-            </button>
-        </div>
+<div class="controls">
+    <div>
+        <label>Subir CSV: </label>
+        <input type="file" id="csvFile" accept=".csv">
     </div>
+    <button onclick="exportToPDF()" class="btn-pdf">Exportar a PDF (A4)</button>
+</div>
 
-    <div class="flex-1 overflow-auto p-8 flex justify-center bg-gray-700">
-        <div id="catalog-page" class="relative shadow-2xl overflow-hidden">
-            
-            <div class="bg-black text-white h-64 relative overflow-hidden">
-                <div :style="{backgroundColor: config.accentColor}" class="absolute top-0 right-0 w-2/3 h-full -skew-x-12 translate-x-20"></div>
-                
-                <div class="absolute inset-0 p-10 flex justify-between items-start">
-                    <div class="z-10">
-                        <div class="bg-white text-black p-2 font-black inline-block mb-4">LOGO HERE</div>
-                        <h1 class="text-7xl font-oswald leading-none italic uppercase leading-tight">
-                            {{ config.promoTitle.split(' ')[0] }}<br>
-                            <span class="text-white">{{ config.promoTitle.split(' ').slice(1).join(' ') }}</span>
-                        </h1>
-                    </div>
-                    
-                    <div class="z-10 bg-white text-black p-4 rounded-lg text-center skew-box border-4 border-black">
-                        <div class="unskew">
-                            <p class="text-sm font-bold uppercase">Up to</p>
-                            <p class="text-5xl font-black">{{config.discount}}%</p>
-                            <p class="text-xl font-black">OFF</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-8 bg-black min-h-full">
-                <div class="grid grid-cols-3 gap-4">
-                    <div v-for="(p, i) in products" :key="i" class="bg-white p-1 rounded-bl-3xl relative">
-                        <div class="bg-black text-white text-[10px] px-2 py-1 font-bold inline-block mb-1">
-                            PRODUCT NAME
-                        </div>
-                        <div class="h-32 flex items-center justify-center p-2">
-                            <img :src="p.imagen || 'https://via.placeholder.com/150'" class="max-h-full max-w-full object-contain">
-                        </div>
-                        <div class="p-2">
-                            <h3 class="font-black text-sm uppercase leading-tight h-8">{{p.nombre}}</h3>
-                            <p class="text-[8px] text-gray-500 leading-tight mb-2">{{p.descripcion?.substring(0, 60)}}...</p>
-                            
-                            <div class="flex justify-between items-end">
-                                <div>
-                                    <p class="text-[8px] line-through text-red-500 font-bold">$ {{p.precio_original || '000'}}</p>
-                                    <p class="text-xl font-black text-black leading-none">$ {{p.precio}}</p>
-                                </div>
-                                <div class="bg-black text-white p-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11 9h2V7h-2v2m1 13c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m0-18C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="absolute bottom-0 w-full bg-yellow-500 p-4 flex justify-between items-center font-bold text-xs italic">
-                <span>ORDER NOW: +12 345 67890</span>
-                <span class="bg-white px-4 py-1 skew-box"><span class="unskew block italic text-[10px]">WWW.WEBSITENAME.COM</span></span>
-            </div>
-        </div>
+<div id="catalog-page">
+    <div class="header">
+        <h1>Catálogo de Productos</h1>
+        <p id="current-date"></p>
+    </div>
+    <div id="products-container" class="products-grid">
+        <p>Carga un archivo CSV para ver los productos.</p>
     </div>
 </div>
 
 <script>
-const { createApp } = Vue;
+    // Establecer fecha actual
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString();
 
-createApp({
-    data() {
-        return {
-            products: [],
-            config: {
-                promoTitle: 'POWER TOOL SALE',
-                discount: '70',
-                accentColor: '#fbbf24'
-            }
-        }
-    },
-    methods: {
-        handleFileUpload(event) {
-            const file = event.target.files[0];
-            Papa.parse(file, {
-                header: true,
-                dynamicTyping: true,
-                complete: (r) => {
-                    this.products = r.data.filter(p => p.nombre).slice(0, 9); // Limitamos a 9 para una sola página pro
-                }
-            });
-        },
-        async downloadPDF() {
-            const element = document.getElementById('catalog-page');
-            const canvas = await html2canvas(element, { 
-                scale: 2, // Alta resolución
-                useCORS: true,
-                logging: false
-            });
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            
-            const imgProps = pdf.getImageProperties(imgData);
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`Catalogo-${this.config.promoTitle}.pdf`);
-        }
-    }
-}).mount('#app');
-</script>
-</body>
-</html>
+    // Lógica para procesar el CSV
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+            const text = event.target.result;
+            processData(text);
+        };
+        reader.readAsText(file);
+    });
+
+    function processData(csvText) {
+        const lines = csvText.split('\n');
+        const container = document.getElementById('products-container');
+        container.innerHTML = ''; // Limpiar contenedor
