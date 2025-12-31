@@ -1,414 +1,387 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Carteras</title>
+    <title>Catálogo de Carteras - Tienda SPA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .hide-header { transform: translateY(-100%); }
-        .show-header { transform: translateY(0); }
-        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
-        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .modal-active { overflow: hidden; }
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        :root {
+            --primary-color: #be185d;
+        }
+
+        /* Ajustable dinámicamente */
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
 
-    <script>
-        const CONFIG = {
-            businessName: "Luxury Handbags",
-            mainColor: "#be185d", // Rosa/Fucsia
-            logo: "👜", // Puede ser URL
-            currency: "S/ ",
-            whatsapp: "51900000000",
-            instagram: "luxury_bags",
-            facebook: "luxury_bags_fb",
-            tiktok: "luxury_bags_tk",
-            youtube: "luxury_bags_yt",
-            version: "1.0.4",
-            sheetUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTE_8u69TExF1p_80F2m9U89jE7e7R5v_dummy/pub?output=csv",
-            cacheTime: 60 * 60 * 1000, // 1 hora
-            prefix: "LH_CART_" // Prefijo único para persistencia
-        };
-    </script>
+<body class="bg-gray-50 font-sans" x-data="shopApp()" x-init="init()">
 
-    <header id="main-header" class="fixed top-0 left-0 right-0 bg-white shadow-md z-40 transition-transform duration-300">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl" id="header-logo"></span>
-                <h1 class="font-bold text-lg leading-tight hidden sm:block" id="header-name"></h1>
-            </div>
-            
-            <div class="flex-1 max-w-md relative">
-                <input type="text" id="search-input" placeholder="Buscar cartera..." class="w-full bg-gray-100 border-none rounded-full py-2 px-10 focus:ring-2 focus:ring-pink-500 text-sm">
-                <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
+    <header class="sticky top-0 z-40 bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <img :src="config.logo" :alt="config.businessName" class="h-10 w-10 object-contain">
+                    <h1 class="hidden md:block font-bold text-xl text-gray-800" x-text="config.businessName"></h1>
+                </div>
+
+                <div class="flex-1 max-w-md relative">
+                    <input type="text" x-model="searchQuery" placeholder="Buscar carteras..."
+                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 outline-none transition-all">
+                    <i class="fa fa-search absolute left-4 top-3 text-gray-400"></i>
+                </div>
+
+                <button @click="cartOpen = true" class="relative p-2">
+                    <i class="fa fa-shopping-bag text-2xl text-gray-700"></i>
+                    <span x-show="cart.length > 0"
+                        class="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                        x-text="cartCount()"></span>
+                </button>
             </div>
 
-            <button onclick="toggleCart()" class="relative p-2">
-                <i data-lucide="shopping-bag"></i>
-                <span id="cart-count" class="absolute -top-1 -right-1 bg-pink-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
-            </button>
-        </div>
-        
-        <div id="category-bar" class="flex gap-4 overflow-x-auto px-4 py-2 border-t text-sm no-scrollbar whitespace-nowrap scroll-smooth bg-white">
-            <button onclick="filterCategory('all')" class="category-pill active font-semibold text-pink-600 border-b-2 border-pink-600">Todo</button>
+            <div class="flex gap-2 overflow-x-auto py-3 no-scrollbar">
+                <button @click="selectedCategory = ''"
+                    :class="selectedCategory === '' ? 'bg-pink-600 text-white' : 'bg-gray-100 text-gray-600'"
+                    class="px-4 py-1 rounded-full text-sm whitespace-nowrap transition">Todas</button>
+                <template x-for="cat in categories" :key="cat">
+                    <button @click="selectedCategory = cat"
+                        :class="selectedCategory === cat ? 'bg-pink-600 text-white' : 'bg-gray-100 text-gray-600'"
+                        class="px-4 py-1 rounded-full text-sm whitespace-nowrap transition" x-text="cat"></button>
+                </template>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 pt-32 pb-20">
+    <main class="container mx-auto px-4 py-6">
+
         <div class="flex justify-between items-center mb-6">
-            <h2 id="view-title" class="text-xl font-bold">Novedades</h2>
-            <div class="flex gap-2">
-                <button onclick="setSort('asc')" class="p-2 bg-white rounded shadow text-xs border">Precio ↑</button>
-                <button onclick="setSort('desc')" class="p-2 bg-white rounded shadow text-xs border">Precio ↓</button>
-                <button onclick="toggleLayout()" class="p-2 bg-white rounded shadow border">
-                    <i data-lucide="layout-grid" id="layout-icon"></i>
-                </button>
+            <h2 class="text-lg font-semibold text-gray-700" x-text="selectedCategory || 'Todos los productos'"></h2>
+            <div class="flex border rounded-lg overflow-hidden">
+                <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-gray-200' : 'bg-white'"
+                    class="p-2 px-3 border-r"><i class="fa fa-th-large"></i></button>
+                <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-gray-200' : 'bg-white'"
+                    class="p-2 px-3"><i class="fa fa-list"></i></button>
             </div>
         </div>
 
-        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div class="skeleton h-64 rounded-xl"></div>
-            <div class="skeleton h-64 rounded-xl"></div>
-            <div class="skeleton h-64 rounded-xl"></div>
-            <div class="skeleton h-64 rounded-xl"></div>
+        <div x-show="loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <template x-for="i in 8">
+                <div class="bg-white p-4 rounded-xl border">
+                    <div class="skeleton h-48 w-full rounded-lg mb-4"></div>
+                    <div class="skeleton h-4 w-3/4 mb-2"></div>
+                    <div class="skeleton h-4 w-1/2"></div>
+                </div>
+            </template>
+        </div>
+
+        <div x-show="!loading"
+            :class="viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' : 'flex flex-col gap-4'">
+
+            <template x-for="product in filteredProducts()" :key="product.id">
+                <div @click="openModal(product)"
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition cursor-pointer group"
+                    :class="viewMode === 'list' ? 'flex items-center p-2 gap-4' : ''">
+
+                    <div :class="viewMode === 'list' ? 'w-24 h-24 flex-shrink-0' : 'aspect-square w-full'">
+                        <img :src="product.imagen" loading="lazy"
+                            class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
+
+                    <div class="p-3 flex-1">
+                        <p class="text-[10px] uppercase text-pink-600 font-bold mb-1" x-text="product.categoria"></p>
+                        <h3 class="font-medium text-gray-800 text-sm md:text-base leading-tight mb-2 line-clamp-2"
+                            x-text="product.nombre"></h3>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-lg font-bold text-gray-900"
+                                x-text="config.currency + product.precio_rebajado"></span>
+                            <span x-show="product.precio_regular > product.precio_rebajado"
+                                class="text-xs text-gray-400 line-through"
+                                x-text="config.currency + product.precio_regular"></span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div x-show="!loading && filteredProducts().length === 0" class="text-center py-20 text-gray-500">
+            <i class="fa fa-search text-4xl mb-4"></i>
+            <p>No encontramos carteras que coincidan con tu búsqueda.</p>
         </div>
     </main>
 
-    <div id="product-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative">
-            <button onclick="closeModal()" class="absolute right-4 top-4 bg-white/80 rounded-full p-2 z-10 shadow">
-                <i data-lucide="x"></i>
-            </button>
-            <div id="modal-content"></div>
+    <div x-show="modalOpen" x-cloak
+        class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm">
+        <div @click.away="modalOpen = false"
+            class="bg-white w-full max-w-2xl rounded-t-3xl md:rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div class="relative">
+                <button @click="modalOpen = false" class="absolute top-4 right-4 bg-white/80 rounded-full p-2 z-10"><i
+                        class="fa fa-times text-xl"></i></button>
+                <div class="grid md:grid-cols-2">
+                    <img :src="selectedProduct?.imagen" class="w-full h-80 md:h-full object-cover">
+                    <div class="p-6">
+                        <span class="text-pink-600 font-bold text-sm" x-text="selectedProduct?.categoria"></span>
+                        <h2 class="text-2xl font-bold text-gray-900 mt-2" x-text="selectedProduct?.nombre"></h2>
+                        <p class="text-gray-600 mt-4 text-sm leading-relaxed" x-text="selectedProduct?.descripcion"></p>
+
+                        <div class="mt-6 flex items-center gap-4">
+                            <div class="flex flex-col">
+                                <span class="text-3xl font-bold text-gray-900"
+                                    x-text="config.currency + selectedProduct?.precio_rebajado"></span>
+                                <span x-show="selectedProduct?.precio_regular > selectedProduct?.precio_rebajado"
+                                    class="text-sm text-gray-400 line-through"
+                                    x-text="config.currency + selectedProduct?.precio_regular"></span>
+                            </div>
+                        </div>
+
+                        <button @click="addToCart(selectedProduct)"
+                            class="w-full mt-6 bg-pink-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-pink-800 transition">
+                            <i class="fa fa-cart-plus"></i> AGREGAR AL CARRITO
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="cart-drawer" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div x-show="cartOpen" x-cloak class="fixed inset-0 z-50 overflow-hidden">
+        <div class="absolute inset-0 bg-black/50" @click="cartOpen = false"></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col">
             <div class="p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold text-lg">Tu Carrito</h3>
-                <button onclick="toggleCart()"><i data-lucide="x"></i></button>
+                <h2 class="font-bold text-lg">Tu Pedido</h2>
+                <button @click="cartOpen = false"><i class="fa fa-times text-2xl"></i></button>
             </div>
-            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-            <div class="p-4 border-t space-y-4">
-                <div class="flex justify-between font-bold text-xl">
-                    <span>Total:</span>
-                    <span id="cart-total">0.00</span>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <template x-for="item in cart" :key="item.id">
+                    <div class="flex gap-4 border-b pb-4">
+                        <img :src="item.imagen" class="w-16 h-16 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="text-sm font-medium" x-text="item.nombre"></h4>
+                            <p class="font-bold text-pink-600" x-text="config.currency + item.precio_rebajado"></p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <button @click="updateQty(item.id, -1)"
+                                    class="w-8 h-8 rounded border flex items-center justify-center">-</button>
+                                <span x-text="item.qty"></span>
+                                <button @click="updateQty(item.id, 1)"
+                                    class="w-8 h-8 rounded border flex items-center justify-center">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="cart.length === 0" class="text-center py-10 text-gray-400">Carrito vacío</div>
+            </div>
+
+            <div class="p-4 border-t bg-gray-50">
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-600">Total estimado:</span>
+                    <span class="text-2xl font-bold" x-text="config.currency + cartTotal()"></span>
                 </div>
-                <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2">
-                    <i data-lucide="message-circle"></i> Enviar Pedido por WhatsApp
+                <button @click="sendWhatsApp()" :disabled="cart.length === 0"
+                    class="w-full bg-green-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:bg-gray-300 transition">
+                    <i class="fab fa-whatsapp text-xl"></i> ENVIAR PEDIDO POR WHATSAPP
                 </button>
             </div>
         </div>
     </div>
 
-    <footer class="bg-gray-900 text-white py-12 px-4">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+    <footer class="bg-gray-900 text-white mt-12 py-10 px-4">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
             <div>
-                <h4 class="font-bold text-xl mb-4" id="footer-name"></h4>
-                <p class="text-gray-400 text-sm">Las mejores carteras con estilo moderno y calidad premium.</p>
+                <h3 class="font-bold text-xl mb-4" x-text="config.businessName"></h3>
+                <p class="text-gray-400 text-sm" x-text="config.description"></p>
             </div>
             <div>
-                <h4 class="font-bold mb-4">Redes Sociales</h4>
+                <h4 class="font-bold mb-4">Síguenos</h4>
                 <div class="flex justify-center md:justify-start gap-4">
-                    <a href="#" id="link-ig" class="p-2 bg-gray-800 rounded-full"><i data-lucide="instagram"></i></a>
-                    <a href="#" id="link-tk" class="p-2 bg-gray-800 rounded-full"><i data-lucide="music-2"></i></a>
-                    <a href="#" id="link-fb" class="p-2 bg-gray-800 rounded-full"><i data-lucide="facebook"></i></a>
+                    <a :href="config.social.instagram" class="text-2xl hover:text-pink-400 transition"><i
+                            class="fab fa-instagram"></i></a>
+                    <a :href="config.social.facebook" class="text-2xl hover:text-blue-500 transition"><i
+                            class="fab fa-facebook"></i></a>
+                    <a :href="config.social.tiktok" class="text-2xl hover:text-gray-300 transition"><i
+                            class="fab fa-tiktok"></i></a>
                 </div>
             </div>
             <div>
                 <h4 class="font-bold mb-4">Contacto</h4>
-                <a href="#" id="link-wa" class="inline-flex items-center gap-2 text-green-400 font-bold">
-                    <i data-lucide="phone"></i> WhatsApp Directo
+                <a :href="'https://wa.me/' + config.whatsapp" class="text-gray-400 block mb-2 hover:text-white">
+                    <i class="fab fa-whatsapp mr-2 text-green-500"></i> <span x-text="config.whatsapp"></span>
                 </a>
             </div>
-        </div>
-        <div class="text-center mt-12 pt-8 border-t border-gray-800 text-xs text-gray-500">
-            &copy; 2024 <span id="footer-copy"></span>. Versión <span id="v-tag"></span>
         </div>
     </footer>
 
     <script>
-        let allProducts = [];
-        let cart = JSON.parse(localStorage.getItem(CONFIG.prefix + 'data')) || [];
-        let currentFilter = 'all';
-        let currentSort = 'none';
-        let isGridView = true;
-        let lastScrollY = window.scrollY;
+        function shopApp() {
+            return {
+                config: {
+                    sheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRUcc0qpHG3yPnGv714JJlzLkry_VWsKvIdrPCS-2fIM5oSLPL0a_MmyzUk9eQomrBkplUL5auyxhmV/pub?gid=0&single=true&output=csv', // Cambia esto
+                    businessName: 'Luxury Bags',
+                    description: 'La mejor selección de carteras modernas y exclusivas para ti.',
+                    logo: 'https://cdn-icons-png.flaticon.com/512/2800/2800458.png',
+                    currency: 'S/ ',
+                    whatsapp: '51950141414', // Código de país + número
+                    social: {
+                        instagram: '#',
+                        facebook: '#',
+                        tiktok: '#',
+                        youtube: '#'
+                    }
+                },
+                loading: true,
+                products: [],
+                categories: [],
+                searchQuery: '',
+                selectedCategory: '',
+                viewMode: 'grid',
+                cart: [],
+                cartOpen: false,
+                modalOpen: false,
+                selectedProduct: null,
 
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', () => {
-            initUI();
-            fetchData();
-            updateCartUI();
-            lucide.createIcons();
-        });
+                async init() {
+                    // Cargar Carrito desde LocalStorage (Prefijo único por URL)
+                    const savedCart = localStorage.getItem(`cart_${window.location.pathname}`);
+                    if (savedCart) this.cart = JSON.parse(savedCart);
 
-        function initUI() {
-            document.getElementById('header-logo').innerText = CONFIG.logo;
-            document.getElementById('header-name').innerText = CONFIG.businessName;
-            document.getElementById('footer-name').innerText = CONFIG.businessName;
-            document.getElementById('footer-copy').innerText = CONFIG.businessName;
-            document.getElementById('v-tag').innerText = CONFIG.version;
-            document.getElementById('link-wa').href = `https://wa.me/${CONFIG.whatsapp}`;
-            document.getElementById('link-ig').href = `https://instagram.com/${CONFIG.instagram}`;
-            document.getElementById('link-fb').href = `https://facebook.com/${CONFIG.facebook}`;
-            document.getElementById('link-tk').href = `https://tiktok.com/@${CONFIG.tiktok}`;
-        }
+                    await this.loadData();
+                },
 
-        // Header Scroll Effect
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('main-header');
-            if (window.scrollY > lastScrollY && window.scrollY > 100) {
-                header.classList.add('hide-header');
-            } else {
-                header.classList.remove('hide-header');
+                async loadData() {
+                    const cacheKey = 'bags_catalog_cache';
+                    const cacheTimeKey = 'bags_catalog_time';
+                    const oneHour = 3600000;
+
+                    // Lógica de Cache
+                    const cachedData = localStorage.getItem(cacheKey);
+                    const lastFetch = localStorage.getItem(cacheTimeKey);
+                    const now = Date.now();
+
+                    if (cachedData && lastFetch && (now - lastFetch < oneHour)) {
+                        this.processData(cachedData);
+                        this.loading = false;
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(this.config.sheetUrl);
+                        const csvText = await response.text();
+                        localStorage.setItem(cacheKey, csvText);
+                        localStorage.setItem(cacheTimeKey, now);
+                        this.processData(csvText);
+                    } catch (error) {
+                        console.error("Error cargando datos, usando fallback si existe");
+                        if (cachedData) this.processData(cachedData);
+                    }
+                    this.loading = false;
+                },
+
+                processData(csvText) {
+                    const rows = csvText.split('\n').slice(1);
+                    this.products = rows.map((row, index) => {
+                        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Split CSV respetando comillas
+                        if (cols.length < 6) return null;
+
+                        return {
+                            id: index,
+                            nombre: cols[0]?.replace(/"/g, '').trim(),
+                            precio_regular: parseFloat(cols[1]),
+                            precio_rebajado: parseFloat(cols[2]),
+                            categoria: cols[3]?.replace(/"/g, '').trim(),
+                            descripcion: cols[4]?.replace(/"/g, '').trim(),
+                            imagen: cols[5]?.replace(/"/g, '').trim(),
+                        };
+                    }).filter(p => p !== null);
+
+                    this.categories = [...new Set(this.products.map(p => p.categoria))];
+                },
+
+                filteredProducts() {
+                    return this.products.filter(p => {
+                        const matchesSearch = (p.nombre + p.descripcion).toLowerCase()
+                            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                            .includes(this.searchQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+
+                        const matchesCat = this.selectedCategory === '' || p.categoria === this.selectedCategory;
+
+                        return matchesSearch && matchesCat;
+                    });
+                },
+
+                openModal(product) {
+                    this.selectedProduct = product;
+                    this.modalOpen = true;
+                },
+
+                addToCart(product) {
+                    const existing = this.cart.find(i => i.id === product.id);
+                    if (existing) {
+                        existing.qty++;
+                    } else {
+                        this.cart.push({ ...product, qty: 1 });
+                    }
+                    this.saveCart();
+                    this.cartOpen = true;
+                },
+
+                updateQty(id, delta) {
+                    const item = this.cart.find(i => i.id === id);
+                    if (item) {
+                        item.qty += delta;
+                        if (item.qty <= 0) {
+                            this.cart = this.cart.filter(i => i.id !== id);
+                        }
+                    }
+                    this.saveCart();
+                },
+
+                saveCart() {
+                    localStorage.setItem(`cart_${window.location.pathname}`, JSON.stringify(this.cart));
+                },
+
+                cartCount() {
+                    return this.cart.reduce((sum, item) => sum + item.qty, 0);
+                },
+
+                cartTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.precio_rebajado * item.qty), 0).toFixed(2);
+                },
+
+                sendWhatsApp() {
+                    let text = `*Pedido de ${this.config.businessName}*\n\n`;
+                    this.cart.forEach(item => {
+                        text += `• ${item.qty}x ${item.nombre} - ${this.config.currency}${item.precio_rebajado}\n`;
+                    });
+                    text += `\n*Total: ${this.config.currency}${this.cartTotal()}*`;
+
+                    const url = `https://wa.me/${this.config.whatsapp}?text=${encodeURIComponent(text)}`;
+                    window.open(url, '_blank');
+                }
             }
-            lastScrollY = window.scrollY;
-        });
-
-        // Obtención de datos
-        async function fetchData() {
-            const cacheKey = CONFIG.prefix + 'cache';
-            const cached = JSON.parse(localStorage.getItem(cacheKey));
-            const now = new Date().getTime();
-
-            if (cached && (now - cached.time < CONFIG.cacheTime)) {
-                renderAll(cached.data);
-                return;
-            }
-
-            try {
-                const response = await fetch(CONFIG.sheetUrl);
-                const csvText = await response.text();
-                const data = parseCSV(csvText);
-                
-                localStorage.setItem(cacheKey, JSON.stringify({ time: now, data }));
-                renderAll(data);
-            } catch (error) {
-                console.error("Error cargando datos, usando ejemplo:", error);
-                const fallback = getSampleData();
-                renderAll(fallback);
-            }
-        }
-
-        function parseCSV(csv) {
-            const lines = csv.split('\n');
-            const result = [];
-            const headers = lines[0].split(',');
-
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i]) continue;
-                const obj = {};
-                const currentline = lines[i].split(',');
-                obj.name = currentline[0];
-                obj.price = parseFloat(currentline[1]);
-                obj.salePrice = parseFloat(currentline[2]);
-                obj.category = currentline[3];
-                obj.description = currentline[4];
-                obj.image = currentline[5] && currentline[5].includes('http') ? currentline[5].trim() : `https://via.placeholder.com/400x500/${(Math.random()*0xFFFFFF<<0).toString(16)}/ffffff?text=${encodeURIComponent(obj.name)}`;
-                obj.id = btoa(obj.name).substring(0, 8);
-                result.push(obj);
-            }
-            return result;
-        }
-
-        function getSampleData() {
-            return [
-                { id: '1', name: "Cartera Elegance Gold", price: 150, salePrice: 120, category: "Gala", description: "Ideal para eventos nocturnos.", image: "https://via.placeholder.com/400x500/be185d/ffffff?text=Cartera+1" },
-                { id: '2', name: "Bolso Urban Daily", price: 90, salePrice: 0, category: "Casual", description: "Resistente y espacioso.", image: "https://via.placeholder.com/400x500/333333/ffffff?text=Cartera+2" },
-                { id: '3', name: "Mini Bag Pink", price: 60, salePrice: 45, category: "Mini", description: "Tendencia 2024.", image: "https://via.placeholder.com/400x500/ff99cc/ffffff?text=Cartera+3" }
-            ];
-        }
-
-        // Renderizado
-        function renderAll(data) {
-            allProducts = data;
-            renderCategories();
-            renderProducts();
-        }
-
-        function renderCategories() {
-            const categories = ['all', ...new Set(allProducts.map(p => p.category))];
-            const container = document.getElementById('category-bar');
-            container.innerHTML = categories.map(cat => `
-                <button onclick="filterCategory('${cat}')" class="category-pill px-4 py-1 rounded-full border transition ${currentFilter === cat ? 'bg-pink-600 text-white border-pink-600' : 'bg-white'}">
-                    ${cat === 'all' ? 'Todo' : cat}
-                </button>
-            `).join('');
-        }
-
-        function renderProducts() {
-            const grid = document.getElementById('product-grid');
-            let filtered = allProducts.filter(p => {
-                const search = document.getElementById('search-input').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const name = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const desc = p.description.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const matchesSearch = name.includes(search) || desc.includes(search);
-                const matchesCat = currentFilter === 'all' || p.category === currentFilter;
-                return matchesSearch && matchesCat;
-            });
-
-            if (currentSort === 'asc') filtered.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
-            if (currentSort === 'desc') filtered.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
-
-            grid.className = isGridView ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" : "flex flex-col gap-4";
-
-            grid.innerHTML = filtered.map(p => `
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden group hover:shadow-md transition cursor-pointer" onclick="showProduct('${p.id}')">
-                    <div class="aspect-[4/5] relative overflow-hidden bg-gray-100">
-                        <img src="${p.image}" alt="${p.name}" loading="lazy" class="object-cover w-full h-full transition duration-500 group-hover:scale-105">
-                        ${p.salePrice > 0 ? `<span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">OFERTA</span>` : ''}
-                    </div>
-                    <div class="p-3">
-                        <p class="text-[10px] text-pink-600 font-bold uppercase">${p.category}</p>
-                        <h3 class="font-semibold text-sm line-clamp-1">${p.name}</h3>
-                        <div class="mt-1">
-                            ${p.salePrice > 0 
-                                ? `<span class="text-pink-600 font-bold">${CONFIG.currency}${p.salePrice}</span> <span class="text-xs text-gray-400 line-through">${CONFIG.currency}${p.price}</span>` 
-                                : `<span class="font-bold">${CONFIG.currency}${p.price}</span>`
-                            }
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Acciones
-        function filterCategory(cat) {
-            currentFilter = cat;
-            renderCategories();
-            renderProducts();
-        }
-
-        function setSort(type) {
-            currentSort = type;
-            renderProducts();
-        }
-
-        function toggleLayout() {
-            isGridView = !isGridView;
-            document.getElementById('layout-icon').setAttribute('data-lucide', isGridView ? 'layout-list' : 'layout-grid');
-            lucide.createIcons();
-            renderProducts();
-        }
-
-        document.getElementById('search-input').addEventListener('input', renderProducts);
-
-        // Modal
-        function showProduct(id) {
-            const p = allProducts.find(x => x.id === id);
-            const modal = document.getElementById('product-modal');
-            const content = document.getElementById('modal-content');
-
-            content.innerHTML = `
-                <img src="${p.image}" class="w-full aspect-square object-cover">
-                <div class="p-6">
-                    <span class="text-pink-600 font-bold text-sm">${p.category}</span>
-                    <h2 class="text-2xl font-bold mb-2">${p.name}</h2>
-                    <p class="text-gray-600 mb-6">${p.description}</p>
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="text-2xl font-bold">
-                            ${p.salePrice > 0 ? CONFIG.currency + p.salePrice : CONFIG.currency + p.price}
-                        </div>
-                        <button onclick="addToCart('${p.id}')" class="flex-1 bg-pink-700 text-white py-3 rounded-xl font-bold hover:bg-pink-800 transition">
-                            Añadir al Carrito
-                        </button>
-                    </div>
-                </div>
-            `;
-            modal.classList.remove('hidden');
-            document.body.classList.add('modal-active');
-            lucide.createIcons();
-        }
-
-        function closeModal() {
-            document.getElementById('product-modal').classList.add('hidden');
-            document.body.classList.remove('modal-active');
-        }
-
-        // Carrito
-        function toggleCart() {
-            const drawer = document.getElementById('cart-drawer');
-            drawer.classList.toggle('hidden');
-        }
-
-        function addToCart(id) {
-            const p = allProducts.find(x => x.id === id);
-            const item = cart.find(x => x.id === id);
-            if (item) {
-                item.qty++;
-            } else {
-                cart.push({ ...p, qty: 1 });
-            }
-            updateCartUI();
-            closeModal();
-            if(document.getElementById('cart-drawer').classList.contains('hidden')) toggleCart();
-        }
-
-        function updateQty(id, delta) {
-            const item = cart.find(x => x.id === id);
-            item.qty += delta;
-            if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            localStorage.setItem(CONFIG.prefix + 'data', JSON.stringify(cart));
-            const container = document.getElementById('cart-items');
-            const count = document.getElementById('cart-count');
-            const totalEl = document.getElementById('cart-total');
-            
-            let total = 0;
-            let totalItems = 0;
-
-            container.innerHTML = cart.map(item => {
-                const price = item.salePrice > 0 ? item.salePrice : item.price;
-                total += price * item.qty;
-                totalItems += item.qty;
-                return `
-                    <div class="flex gap-4 items-center border-b pb-4">
-                        <img src="${item.image}" class="w-16 h-16 rounded object-cover">
-                        <div class="flex-1">
-                            <h4 class="font-bold text-sm">${item.name}</h4>
-                            <p class="text-xs text-gray-500">${CONFIG.currency}${price}</p>
-                        </div>
-                        <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-2">
-                            <button onclick="updateQty('${item.id}', -1)" class="p-1 text-pink-600 font-bold">-</button>
-                            <span class="text-sm w-4 text-center">${item.qty}</span>
-                            <button onclick="updateQty('${item.id}', 1)" class="p-1 text-pink-600 font-bold">+</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            if(cart.length === 0) container.innerHTML = `<p class="text-center text-gray-400 mt-10">Tu carrito está vacío</p>`;
-
-            count.innerText = totalItems;
-            totalEl.innerText = CONFIG.currency + total.toFixed(2);
-            lucide.createIcons();
-        }
-
-        function sendOrder() {
-            if (cart.length === 0) return;
-            let total = 0;
-            let text = `*Pedido de ${CONFIG.businessName}*\n--------------------------\n`;
-            cart.forEach(item => {
-                const price = item.salePrice > 0 ? item.salePrice : item.price;
-                const sub = price * item.qty;
-                total += sub;
-                text += `• ${item.qty}x ${item.name} (${CONFIG.currency}${price})\n`;
-            });
-            text += `--------------------------\n*Total: ${CONFIG.currency}${total.toFixed(2)}*`;
-            
-            const wpUrl = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
-            window.open(wpUrl, '_blank');
         }
     </script>
 </body>
+
 </html>
