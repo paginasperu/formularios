@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liquor Store Catalog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header id="main-header" class="header glass">
+        <div class="container header-content">
+            <div class="logo" id="store-logo-container">
+                <!-- Logo will be injected here -->
+            </div>
+            <div class="actions">
+                <button class="btn-icon" id="view-toggle"><i class="fas fa-th-list"></i></button>
+                <button class="btn-icon" id="search-toggle"><i class="fas fa-search"></i></button>
+                <button class="btn-icon" id="cart-toggle">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container glass" id="search-bar" style="display: none;">
+        <input type="text" id="search-input" placeholder="Buscar productos, marcas, categorías..." class="search-input">
+    </div>
+
+    <nav class="categories-tabs" id="categories-container">
+        <!-- Categories will be injected here -->
+    </nav>
+
+    <main class="container">
+        <div class="product-grid" id="product-list">
+            <!-- Products or Skeletons will be injected here -->
+        </div>
+
+        <div id="pagination-container" class="pagination">
+            <!-- Pagination will be injected here -->
+        </div>
+    </main>
+
+    <footer id="main-footer">
+        <h3 id="footer-store-name"></h3>
+        <div class="social-links" id="social-links">
+            <!-- Social links will be injected here -->
+        </div>
+        <p>&copy; 2026 Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Mi Carrito</h2>
+            <button class="btn-icon" id="close-cart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items-list">
+            <!-- Cart items will be injected here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-amount">S/ 0.00</span>
+            </div>
+            <button class="btn-checkout" id="whatsapp-checkout">
+                <i class="fab fa-whatsapp"></i> Enviar Pedido
+            </button>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal-content">
+            <button class="btn-icon" style="position: absolute; right: 20px; top: 20px;" id="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="modal-body">
+                <!-- Product details will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="utils.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
